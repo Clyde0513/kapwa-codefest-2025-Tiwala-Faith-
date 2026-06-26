@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { uploadToSupabaseStorage } from '../../../lib/supabase-media';
 
 interface WebsiteSettings {
   // Basic Information
@@ -13,6 +14,23 @@ interface WebsiteSettings {
   heroTitle: string;
   heroSubtitle: string;
   aboutText: string;
+
+  // Mission Page
+  missionTitle?: string;
+  missionFilipinoText?: string;
+  missionEnglishText?: string;
+  missionKeywordsText?: string;
+  logoExplanationTitle?: string;
+  logoBambooTitle?: string;
+  logoBambooText?: string;
+  logoSunTitle?: string;
+  logoSunText?: string;
+  logoHandsTitle?: string;
+  logoHandsText?: string;
+  logoConcept?: string;
+  logoDesign?: string;
+  logoNote?: string;
+  logoImageUrl?: string;
   
   // Contact Information
   contactEmail: string;
@@ -67,6 +85,23 @@ const defaultSettings: WebsiteSettings = {
     heroTitle: 'Welcome to Our Church Family',
     heroSubtitle: 'Join us in faith, fellowship, and community',
     aboutText: 'We are a welcoming community dedicated to serving God and each other. Our mission is to provide spiritual guidance and support to Filipino families in the Boston area.',
+
+    // Mission Page
+    missionTitle: 'Mission Statement of the\nFilipino Apostolate\nof the\nArchdiocese of Boston',
+    missionFilipinoText: 'Kami ay isang Sambayanang Kristiyano\nna gumagabay,\nkumakalinga,\nat umaaruga\nsa aming mga kabataan at kapwa Pilipino\ndito sa Arkidiosesis ng Boston.',
+    missionEnglishText: 'We are a Christian Community who guides, takes care, and nourishes the faith life of our young people, and our fellow Filipinos in the Archdiocese of Boston.',
+    missionKeywordsText: 'Sambayanang Kristiyano | Christian Community\ngumagabay | to guide\nkumakalinga | to take care\numaaruga | to nourish',
+    logoExplanationTitle: 'Logo Explanation',
+    logoBambooTitle: 'The Bamboo Cross',
+    logoBambooText: 'Represents our Christian identity as Asians. The bamboo also symbolizes strength, and flexibility even in the midst of trials, sufferings, and other adversities. As one Chinese actor expressed "Notice that the stiffest tree is most easily cracked, while the bamboo survives by bending with the wind". It symbolizes our resiliency as Filipinos.',
+    logoSunTitle: 'The Sun with Eight Rays',
+    logoSunText: 'Taken from our national flag, it symbolizes our diversity. The rays emanate from the center. Our diversity as Filipinos here in the Archdiocese of Boston draws its source in our Lord Jesus Christ especially in the Holy Eucharist.',
+    logoHandsTitle: 'The Hands',
+    logoHandsText: 'They are in the action of reaching out to each other. The action is symbolic of our desire to reach out to our kababayan in the Greater Boston Areas through our apostolate as described in the words gumagabay, kumakalinga, at umaaruga. These are the key words from our new vision-mission statement.',
+    logoConcept: 'Fr. Alex Castro, AA',
+    logoDesign: 'Rochie Panganiban',
+    logoNote: '*The logo was adapted from the logo used by the National Assembly of Filipino Priest in the USA (NAFP-USA) for their Triennial Assembly last November 2017',
+    logoImageUrl: '/images/tiwalaupdated.png',
     
     // Contact Information
     contactEmail: 'info@church.com',
@@ -121,6 +156,7 @@ export default function WebsiteSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [settings, setSettings] = useState<WebsiteSettings>(defaultSettings);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,6 +215,27 @@ export default function WebsiteSettingsPage() {
       ...prev,
       resourceLinks: prev.resourceLinks?.filter((_, i) => i !== index) || []
     }));
+  };
+
+  const handleLogoImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    setImageUploading(true);
+    try {
+      const result = await uploadToSupabaseStorage(file, 'image');
+      setSettings(prev => ({ ...prev, logoImageUrl: result.url }));
+    } catch (error) {
+      console.error('Error uploading logo image:', error);
+      alert('Failed to upload logo image. Please try again.');
+    } finally {
+      setImageUploading(false);
+    }
   };
 
   // Load settings on component mount
@@ -336,6 +393,225 @@ export default function WebsiteSettingsPage() {
                   rows={6}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Tell visitors about your church community, history, and what makes you special..."
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          {/* Mission Page */}
+          <div className="bg-white rounded-lg shadow-sm border">
+            <div className="p-6 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">Mission Page</h2>
+              <p className="text-gray-600 mt-1">Edit mission page statements, reflection keywords, and logo explanation</p>
+            </div>
+            <div className="p-6 space-y-6">
+              <div>
+                <label htmlFor="missionTitle" className="block text-sm font-medium text-gray-700 mb-2">
+                  Mission Page Title
+                </label>
+                <textarea
+                  id="missionTitle"
+                  name="missionTitle"
+                  value={settings.missionTitle || ''}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Mission Statement of the\nFilipino Apostolate\nof the\nArchdiocese of Boston"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="missionFilipinoText" className="block text-sm font-medium text-gray-700 mb-2">
+                  Filipino Mission Text
+                </label>
+                <textarea
+                  id="missionFilipinoText"
+                  name="missionFilipinoText"
+                  value={settings.missionFilipinoText || ''}
+                  onChange={handleInputChange}
+                  rows={7}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="missionEnglishText" className="block text-sm font-medium text-gray-700 mb-2">
+                  English Mission Text
+                </label>
+                <textarea
+                  id="missionEnglishText"
+                  name="missionEnglishText"
+                  value={settings.missionEnglishText || ''}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="missionKeywordsText" className="block text-sm font-medium text-gray-700 mb-2">
+                  Reflection Keywords
+                </label>
+                <textarea
+                  id="missionKeywordsText"
+                  name="missionKeywordsText"
+                  value={settings.missionKeywordsText || ''}
+                  onChange={handleInputChange}
+                  rows={5}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="One per line, like: Sambayanang Kristiyano | Christian Community"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="logoExplanationTitle" className="block text-sm font-medium text-gray-700 mb-2">
+                  Logo Explanation Title
+                </label>
+                <input
+                  type="text"
+                  id="logoExplanationTitle"
+                  name="logoExplanationTitle"
+                  value={settings.logoExplanationTitle || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="logoImage" className="block text-sm font-medium text-gray-700 mb-2">
+                  Mission Logo Image
+                </label>
+                <input
+                  type="file"
+                  id="logoImage"
+                  accept="image/*"
+                  onChange={handleLogoImageUpload}
+                  disabled={imageUploading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {imageUploading && <p className="text-sm text-gray-500 mt-2">Uploading image...</p>}
+                {settings.logoImageUrl && (
+                  <div className="mt-4 inline-block">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={settings.logoImageUrl} alt="Mission logo preview" className="h-40 w-40 object-contain rounded-lg border bg-white" />
+                    <button
+                      type="button"
+                      onClick={() => setSettings(prev => ({ ...prev, logoImageUrl: '' }))}
+                      className="mt-2 text-sm text-red-600 hover:text-red-700"
+                    >
+                      Remove image
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-3">
+                  <label htmlFor="logoBambooTitle" className="block text-sm font-medium text-gray-700">
+                    Bamboo Section Title
+                  </label>
+                  <input
+                    type="text"
+                    id="logoBambooTitle"
+                    name="logoBambooTitle"
+                    value={settings.logoBambooTitle || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <textarea
+                    name="logoBambooText"
+                    value={settings.logoBambooText || ''}
+                    onChange={handleInputChange}
+                    rows={6}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label htmlFor="logoSunTitle" className="block text-sm font-medium text-gray-700">
+                    Sun Section Title
+                  </label>
+                  <input
+                    type="text"
+                    id="logoSunTitle"
+                    name="logoSunTitle"
+                    value={settings.logoSunTitle || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <textarea
+                    name="logoSunText"
+                    value={settings.logoSunText || ''}
+                    onChange={handleInputChange}
+                    rows={6}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label htmlFor="logoHandsTitle" className="block text-sm font-medium text-gray-700">
+                    Hands Section Title
+                  </label>
+                  <input
+                    type="text"
+                    id="logoHandsTitle"
+                    name="logoHandsTitle"
+                    value={settings.logoHandsTitle || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <textarea
+                    name="logoHandsText"
+                    value={settings.logoHandsText || ''}
+                    onChange={handleInputChange}
+                    rows={6}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="logoConcept" className="block text-sm font-medium text-gray-700 mb-2">
+                    Logo Concept Credit
+                  </label>
+                  <input
+                    type="text"
+                    id="logoConcept"
+                    name="logoConcept"
+                    value={settings.logoConcept || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="logoDesign" className="block text-sm font-medium text-gray-700 mb-2">
+                    Logo Design Credit
+                  </label>
+                  <input
+                    type="text"
+                    id="logoDesign"
+                    name="logoDesign"
+                    value={settings.logoDesign || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="logoNote" className="block text-sm font-medium text-gray-700 mb-2">
+                  Logo Note
+                </label>
+                <textarea
+                  id="logoNote"
+                  name="logoNote"
+                  value={settings.logoNote || ''}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>

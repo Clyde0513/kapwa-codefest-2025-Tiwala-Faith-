@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '../../../lib/db-utils';
+import { revalidatePath } from 'next/cache';
 
 interface WebsiteSettings {
   // Basic Information
@@ -12,6 +13,23 @@ interface WebsiteSettings {
   heroTitle: string;
   heroSubtitle: string;
   aboutText: string;
+
+  // Mission Page
+  missionTitle?: string;
+  missionFilipinoText?: string;
+  missionEnglishText?: string;
+  missionKeywordsText?: string;
+  logoExplanationTitle?: string;
+  logoBambooTitle?: string;
+  logoBambooText?: string;
+  logoSunTitle?: string;
+  logoSunText?: string;
+  logoHandsTitle?: string;
+  logoHandsText?: string;
+  logoConcept?: string;
+  logoDesign?: string;
+  logoNote?: string;
+  logoImageUrl?: string;
   
   // Contact Information
   contactEmail: string;
@@ -65,6 +83,23 @@ const settingsSchema = z.object({
   heroTitle: z.string().min(1, 'Hero title is required').max(200, 'Hero title must be less than 200 characters'),
   heroSubtitle: z.string().max(300, 'Hero subtitle must be less than 300 characters').optional(),
   aboutText: z.string().max(2000, 'About text must be less than 2,000 characters').optional(),
+
+  // Mission Page
+  missionTitle: z.string().max(300, 'Mission title must be less than 300 characters').optional(),
+  missionFilipinoText: z.string().max(2000, 'Filipino mission text must be less than 2,000 characters').optional(),
+  missionEnglishText: z.string().max(2000, 'English mission text must be less than 2,000 characters').optional(),
+  missionKeywordsText: z.string().max(1000, 'Mission keywords must be less than 1,000 characters').optional(),
+  logoExplanationTitle: z.string().max(100, 'Logo explanation title must be less than 100 characters').optional(),
+  logoBambooTitle: z.string().max(100, 'Bamboo title must be less than 100 characters').optional(),
+  logoBambooText: z.string().max(2000, 'Bamboo text must be less than 2,000 characters').optional(),
+  logoSunTitle: z.string().max(100, 'Sun title must be less than 100 characters').optional(),
+  logoSunText: z.string().max(2000, 'Sun text must be less than 2,000 characters').optional(),
+  logoHandsTitle: z.string().max(100, 'Hands title must be less than 100 characters').optional(),
+  logoHandsText: z.string().max(2000, 'Hands text must be less than 2,000 characters').optional(),
+  logoConcept: z.string().max(100, 'Logo concept must be less than 100 characters').optional(),
+  logoDesign: z.string().max(100, 'Logo design must be less than 100 characters').optional(),
+  logoNote: z.string().max(1000, 'Logo note must be less than 1,000 characters').optional(),
+  logoImageUrl: z.string().url('Invalid logo image URL').optional().or(z.literal('')),
   
   // Contact Information
   contactEmail: z.string().email('Invalid email address').optional(),
@@ -122,6 +157,23 @@ const defaultSettings = {
   heroTitle: 'Welcome to Our Church Family',
   heroSubtitle: 'Join us in faith, fellowship, and community',
   aboutText: 'We are a welcoming community dedicated to serving God and each other. Our mission is to provide spiritual guidance and support to Filipino families in the Boston area.',
+
+  // Mission Page
+  missionTitle: 'Mission Statement of the\nFilipino Apostolate\nof the\nArchdiocese of Boston',
+  missionFilipinoText: 'Kami ay isang Sambayanang Kristiyano\nna gumagabay,\nkumakalinga,\nat umaaruga\nsa aming mga kabataan at kapwa Pilipino\ndito sa Arkidiosesis ng Boston.',
+  missionEnglishText: 'We are a Christian Community who guides, takes care, and nourishes the faith life of our young people, and our fellow Filipinos in the Archdiocese of Boston.',
+  missionKeywordsText: 'Sambayanang Kristiyano | Christian Community\ngumagabay | to guide\nkumakalinga | to take care\numaaruga | to nourish',
+  logoExplanationTitle: 'Logo Explanation',
+  logoBambooTitle: 'The Bamboo Cross',
+  logoBambooText: 'Represents our Christian identity as Asians. The bamboo also symbolizes strength, and flexibility even in the midst of trials, sufferings, and other adversities. As one Chinese actor expressed "Notice that the stiffest tree is most easily cracked, while the bamboo survives by bending with the wind". It symbolizes our resiliency as Filipinos.',
+  logoSunTitle: 'The Sun with Eight Rays',
+  logoSunText: 'Taken from our national flag, it symbolizes our diversity. The rays emanate from the center. Our diversity as Filipinos here in the Archdiocese of Boston draws its source in our Lord Jesus Christ especially in the Holy Eucharist.',
+  logoHandsTitle: 'The Hands',
+  logoHandsText: 'They are in the action of reaching out to each other. The action is symbolic of our desire to reach out to our kababayan in the Greater Boston Areas through our apostolate as described in the words gumagabay, kumakalinga, at umaaruga. These are the key words from our new vision-mission statement.',
+  logoConcept: 'Fr. Alex Castro, AA',
+  logoDesign: 'Rochie Panganiban',
+  logoNote: '*The logo was adapted from the logo used by the National Assembly of Filipino Priest in the USA (NAFP-USA) for their Triennial Assembly last November 2017',
+  logoImageUrl: '/images/tiwalaupdated.png',
   
   // Contact Information
   contactEmail: 'info@church.com',
@@ -245,6 +297,10 @@ export async function POST(req: NextRequest) {
       console.error('Failed to save to database, but continuing:', dbError);
       // Continue even if database save fails
     }
+
+    revalidatePath('/');
+    revalidatePath('/mission');
+    revalidatePath('/calendar');
     
     return NextResponse.json({ 
       ok: true, 

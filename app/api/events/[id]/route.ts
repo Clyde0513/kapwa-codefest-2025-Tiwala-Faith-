@@ -1,4 +1,5 @@
 import { supabaseDb } from '@/lib/supabase-db';
+import { revalidatePath } from 'next/cache';
 
 export const runtime = 'nodejs';
 
@@ -35,7 +36,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const { id } = await params;
     const body = await req.json();
-    const { title, startsAt, endsAt, allDay, location, description, url, gcalEventId, gcalCalendarId } = body;
+    const { title, startsAt, endsAt, allDay, location, description, imageUrl, url, gcalEventId, gcalCalendarId } = body;
 
     // Check if event exists
     const existingEvent = await supabaseDb.event.findUnique({
@@ -55,6 +56,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (endsAt !== undefined) updateData.endsAt = new Date(endsAt);
     if (allDay !== undefined) updateData.allDay = Boolean(allDay);
     if (location !== undefined) updateData.location = location;
+    if (imageUrl !== undefined) updateData.imageUrl = imageUrl || null;
     if (url !== undefined) updateData.url = url;
     if (gcalEventId !== undefined) updateData.gcalEventId = gcalEventId;
     if (gcalCalendarId !== undefined) updateData.gcalCalendarId = gcalCalendarId;
@@ -72,6 +74,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         },
       },
     });
+
+    revalidatePath('/');
+    revalidatePath('/calendar');
 
     return Response.json(updatedEvent);
   } catch (e: any) {
@@ -96,6 +101,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     await supabaseDb.event.delete({
       where: { id },
     });
+
+    revalidatePath('/');
+    revalidatePath('/calendar');
 
     return Response.json({ message: 'Event deleted successfully', id });
   } catch (e: any) {

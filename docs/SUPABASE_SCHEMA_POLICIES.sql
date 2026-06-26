@@ -133,6 +133,7 @@ create table if not exists public."Event" (
   "endsAt" timestamptz not null,
   "allDay" boolean not null default false,
   location text,
+  "imageUrl" text,
   url text,
   "createdById" uuid references public."User"(id) on delete set null,
   "gcalEventId" text,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../lib/db-utils';
 import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
 
 const eventSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
@@ -8,6 +9,7 @@ const eventSchema = z.object({
   startsAt: z.string().datetime('Invalid start date'),
   endsAt: z.string().datetime('Invalid end date'),
   location: z.string().max(500, 'Location must be less than 500 characters').optional(),
+  imageUrl: z.string().url('Invalid image URL').optional().or(z.literal('')),
   allDay: z.boolean().default(false),
   createdById: z.string().uuid().optional(),
 });
@@ -24,6 +26,7 @@ export async function POST(req: NextRequest) {
         startsAt: new Date(validatedData.startsAt),
         endsAt: new Date(validatedData.endsAt),
         location: validatedData.location || null,
+        imageUrl: validatedData.imageUrl || null,
         allDay: validatedData.allDay,
         createdById: validatedData.createdById || null,
       },
@@ -37,6 +40,9 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+
+    revalidatePath('/');
+    revalidatePath('/calendar');
 
     return NextResponse.json({ ok: true, event }, { status: 201 });
   } catch (error) {

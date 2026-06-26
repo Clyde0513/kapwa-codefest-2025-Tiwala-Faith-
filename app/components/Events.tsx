@@ -9,7 +9,7 @@ interface Settings {
 }
 
 interface Event {
-  id: number;
+  id: string | number;
   title: string;
   image: string;
   venue: string;
@@ -19,6 +19,17 @@ interface Event {
   time: string;
   displayDate: string;
   description: string;
+}
+
+interface ApiEvent {
+  id: string;
+  title: string;
+  description?: string | null;
+  startsAt: string;
+  endsAt: string;
+  location?: string | null;
+  imageUrl?: string | null;
+  allDay?: boolean;
 }
 
 const events: Event[] = [
@@ -75,6 +86,7 @@ const events: Event[] = [
 export default function Events() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [adminEvents, setAdminEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -92,9 +104,68 @@ export default function Events() {
     fetchSettings();
   }, []);
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('/api/events?upcoming=true&limit=4');
+        const data = await response.json();
+
+        if (!response.ok || !Array.isArray(data.events)) {
+          return;
+        }
+
+        const mappedEvents = data.events.map((event: ApiEvent) => {
+          const startsAt = new Date(event.startsAt);
+          const hasValidDate = !Number.isNaN(startsAt.getTime());
+          const locationParts = (event.location || 'Location TBD')
+            .split('\n')
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+          return {
+            id: event.id,
+            title: event.title,
+            image: event.imageUrl || '/images/Mass.png',
+            venue: locationParts[0] || 'Location TBD',
+            address: locationParts[1] || '',
+            cityState: locationParts.slice(2).join(', '),
+            date: hasValidDate
+              ? startsAt.toLocaleDateString(undefined, {
+                  weekday: 'long',
+                  month: '2-digit',
+                  day: '2-digit',
+                  year: '2-digit',
+                })
+              : 'Date TBD',
+            time: event.allDay || !hasValidDate
+              ? 'All Day'
+              : startsAt.toLocaleTimeString(undefined, {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                }),
+            displayDate: hasValidDate
+              ? startsAt.toLocaleDateString(undefined, {
+                  month: 'long',
+                  day: 'numeric',
+                })
+              : 'Upcoming',
+            description: event.description || 'More details coming soon.',
+          };
+        });
+
+        setAdminEvents(mappedEvents);
+      } catch (error) {
+        console.error('Error fetching admin-managed events:', error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
   // Fallback values
   const title = settings?.eventsTitle || 'EVENTS';
   const subtitle = settings?.eventsSubtitle || 'Our faith community provides many opportunities to fellowship with each other.\nHere are just a few of our upcoming events!';
+  const displayEvents = adminEvents.length > 0 ? adminEvents : events;
 
   return (
     <section id="events" className="py-20 px-4" style={{ backgroundColor: '#faecc8' }}>
@@ -113,7 +184,7 @@ export default function Events() {
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {events.map((event) => (
+          {displayEvents.map((event) => (
             <div
               key={event.id}
               className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"

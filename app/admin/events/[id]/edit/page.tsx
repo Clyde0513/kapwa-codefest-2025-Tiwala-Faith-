@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { uploadToSupabaseStorage } from '../../../../../lib/supabase-media';
 
 export default function EditEventPage() {
   const router = useRouter();
@@ -17,8 +18,10 @@ export default function EditEventPage() {
     startsAt: '',
     endsAt: '',
     location: '',
+    imageUrl: '',
     allDay: false,
   });
+  const [imageUploading, setImageUploading] = useState(false);
 
   // Fetch event data
   useEffect(() => {
@@ -42,6 +45,7 @@ export default function EditEventPage() {
               ? endDate.toISOString().split('T')[0]
               : endDate.toISOString().slice(0, 16),
             location: event.location || '',
+            imageUrl: event.imageUrl || '',
             allDay: event.allDay,
           });
         } else {
@@ -127,6 +131,7 @@ export default function EditEventPage() {
           startsAt,
           endsAt,
           location: formData.location,
+          imageUrl: formData.imageUrl,
           allDay: formData.allDay,
         }),
       });
@@ -176,6 +181,27 @@ export default function EditEventPage() {
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    setImageUploading(true);
+    try {
+      const result = await uploadToSupabaseStorage(file, 'image');
+      setFormData(prev => ({ ...prev, imageUrl: result.url }));
+    } catch (error) {
+      console.error('Error uploading event image:', error);
+      alert('Failed to upload event image. Please try again.');
+    } finally {
+      setImageUploading(false);
+    }
   };
 
   if (fetching) {
@@ -252,6 +278,35 @@ export default function EditEventPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Describe what will happen at this event, who should attend, and any important details..."
                 />
+              </div>
+
+              {/* Event Image */}
+              <div>
+                <label htmlFor="eventImage" className="block text-sm font-medium text-gray-700 mb-2">
+                  Event Card Image
+                </label>
+                <input
+                  type="file"
+                  id="eventImage"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={imageUploading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {imageUploading && <p className="text-sm text-gray-500 mt-2">Uploading image...</p>}
+                {formData.imageUrl && (
+                  <div className="mt-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={formData.imageUrl} alt="Event preview" className="h-40 w-full object-cover rounded-lg border" />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                      className="mt-2 text-sm text-red-600 hover:text-red-700"
+                    >
+                      Remove image
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

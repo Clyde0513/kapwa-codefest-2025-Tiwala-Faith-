@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { uploadToSupabaseStorage } from '../../../../lib/supabase-media';
 
 export default function NewEventPage() {
   const router = useRouter();
@@ -13,8 +14,10 @@ export default function NewEventPage() {
     startsAt: '',
     endsAt: '',
     location: '',
+    imageUrl: '',
     allDay: false,
   });
+  const [imageUploading, setImageUploading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +86,7 @@ export default function NewEventPage() {
           startsAt,
           endsAt,
           location: formData.location,
+          imageUrl: formData.imageUrl,
           allDay: formData.allDay,
         }),
       });
@@ -108,6 +112,27 @@ export default function NewEventPage() {
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    setImageUploading(true);
+    try {
+      const result = await uploadToSupabaseStorage(file, 'image');
+      setFormData(prev => ({ ...prev, imageUrl: result.url }));
+    } catch (error) {
+      console.error('Error uploading event image:', error);
+      alert('Failed to upload event image. Please try again.');
+    } finally {
+      setImageUploading(false);
+    }
   };
 
   // Set default times
@@ -198,6 +223,35 @@ Join us for our monthly community dinner! This is a great opportunity to meet ne
                 <p className="text-sm text-gray-500 mt-1">
                   Help people understand what to expect and why they should come
                 </p>
+              </div>
+
+              {/* Event Image */}
+              <div>
+                <label htmlFor="eventImage" className="block text-sm font-medium text-gray-700 mb-2">
+                  Event Card Image
+                </label>
+                <input
+                  type="file"
+                  id="eventImage"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={imageUploading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {imageUploading && <p className="text-sm text-gray-500 mt-2">Uploading image...</p>}
+                {formData.imageUrl && (
+                  <div className="mt-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={formData.imageUrl} alt="Event preview" className="h-40 w-full object-cover rounded-lg border" />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                      className="mt-2 text-sm text-red-600 hover:text-red-700"
+                    >
+                      Remove image
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
