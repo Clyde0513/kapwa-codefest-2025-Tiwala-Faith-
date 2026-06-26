@@ -44,6 +44,9 @@ interface WebsiteSettings {
   massScheduleAddress?: string;
   massScheduleCityState?: string;
   massScheduleAdditionalInfo?: string;
+  massScheduleFooterText?: string;
+  massScheduleInstagramUrl?: string;
+  massScheduleFacebookUrl?: string;
   
   // Leadership Section
   leadershipTitle?: string;
@@ -114,6 +117,9 @@ const settingsSchema = z.object({
   massScheduleAddress: z.string().max(300, 'Mass schedule address must be less than 300 characters').optional(),
   massScheduleCityState: z.string().max(100, 'Mass schedule city/state must be less than 100 characters').optional(),
   massScheduleAdditionalInfo: z.string().max(300, 'Mass schedule additional info must be less than 300 characters').optional(),
+  massScheduleFooterText: z.string().max(200, 'Mass schedule footer text must be less than 200 characters').optional(),
+  massScheduleInstagramUrl: z.string().url('Invalid Instagram URL').optional().or(z.literal('')),
+  massScheduleFacebookUrl: z.string().url('Invalid Facebook URL').optional().or(z.literal('')),
   
   // Leadership Section
   leadershipTitle: z.string().max(100, 'Leadership title must be less than 100 characters').optional(),
@@ -188,6 +194,9 @@ const defaultSettings = {
   massScheduleAddress: '790 Salem Street',
   massScheduleCityState: 'Malden, MA 02148',
   massScheduleAdditionalInfo: 'For Additional Info',
+  massScheduleFooterText: 'Posted by Filipino Apostolate on 10/05/25 @ 8:00 am',
+  massScheduleInstagramUrl: '',
+  massScheduleFacebookUrl: '',
   
   // Leadership Section
   leadershipTitle: 'Leadership',

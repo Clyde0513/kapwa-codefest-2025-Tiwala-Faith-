@@ -45,6 +45,9 @@ interface WebsiteSettings {
   massScheduleAddress?: string;
   massScheduleCityState?: string;
   massScheduleAdditionalInfo?: string;
+  massScheduleFooterText?: string;
+  massScheduleInstagramUrl?: string;
+  massScheduleFacebookUrl?: string;
   
   // Leadership Section
   leadershipTitle?: string;
@@ -116,6 +119,9 @@ const defaultSettings: WebsiteSettings = {
     massScheduleAddress: '790 Salem Street',
     massScheduleCityState: 'Malden, MA 02148',
     massScheduleAdditionalInfo: 'For Additional Info',
+    massScheduleFooterText: 'Posted by Filipino Apostolate on 10/05/25 @ 8:00 am',
+    massScheduleInstagramUrl: '',
+    massScheduleFacebookUrl: '',
     
     // Leadership Section
     leadershipTitle: 'Leadership',
@@ -785,6 +791,53 @@ export default function WebsiteSettingsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="For Additional Info"
                 />
+              </div>
+
+              <div>
+                <label htmlFor="massScheduleFooterText" className="block text-sm font-medium text-gray-700 mb-2">
+                  Footer / Posted By Text
+                </label>
+                <input
+                  type="text"
+                  id="massScheduleFooterText"
+                  name="massScheduleFooterText"
+                  value={settings.massScheduleFooterText || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Posted by Filipino Apostolate on 10/05/25 @ 8:00 am"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="massScheduleInstagramUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    Instagram Link
+                  </label>
+                  <input
+                    type="url"
+                    id="massScheduleInstagramUrl"
+                    name="massScheduleInstagramUrl"
+                    value={settings.massScheduleInstagramUrl || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="https://www.instagram.com/..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="massScheduleFacebookUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    Facebook Link
+                  </label>
+                  <input
+                    type="url"
+                    id="massScheduleFacebookUrl"
+                    name="massScheduleFacebookUrl"
+                    value={settings.massScheduleFacebookUrl || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="https://www.facebook.com/..."
+                  />
+                </div>
               </div>
             </div>
           </div>
