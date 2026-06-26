@@ -53,7 +53,11 @@ export default async function BlogPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {posts.map((post) => (
+            {posts.map((post) => {
+              const createdAt = new Date(post.createdAt);
+              const hasValidCreatedAt = !Number.isNaN(createdAt.getTime());
+
+              return (
               <article key={post.id} className="bg-white rounded-lg shadow-md p-6 border-l-4 border-[#A85A52]">
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="flex-1">
@@ -68,9 +72,13 @@ export default async function BlogPage() {
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                       <span>{post.author?.name || 'Church Staff'}</span>
                       <span>•</span>
-                      <time dateTime={post.createdAt.toISOString()}>
-                        {new Date(post.createdAt).toLocaleDateString()}
-                      </time>
+                      {hasValidCreatedAt ? (
+                        <time dateTime={createdAt.toISOString()}>
+                          {createdAt.toLocaleDateString()}
+                        </time>
+                      ) : (
+                        <span>Unknown date</span>
+                      )}
                     </div>
                     <p className="text-gray-700 leading-relaxed">
                       {post.content.length > 300 
@@ -103,7 +111,7 @@ export default async function BlogPage() {
                   </div>
                 </div>
               </article>
-            ))}
+            )})}
           </div>
         )}
       </section>

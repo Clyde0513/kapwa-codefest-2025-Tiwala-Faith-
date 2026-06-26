@@ -49,15 +49,22 @@ export default async function PostPage({ params }: Props) {
     );
   }
 
+  const createdAt = new Date(post.createdAt);
+  const hasValidCreatedAt = !Number.isNaN(createdAt.getTime());
+
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#faecc8' }}>
       <div className="max-w-3xl mx-auto py-12 px-4">
         <article className="bg-white rounded-lg shadow-md p-8 border-l-4 border-[#A85A52]">
           <h1 className="text-4xl font-poppins mb-4 text-gray-900">{post.title}</h1>
           <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
-            <time dateTime={post.createdAt.toISOString()}>
-              {new Date(post.createdAt).toLocaleDateString()}
-            </time>
+            {hasValidCreatedAt ? (
+              <time dateTime={createdAt.toISOString()}>
+                {createdAt.toLocaleDateString()}
+              </time>
+            ) : (
+              <span>Unknown date</span>
+            )}
             <span>•</span>
             <span>By {post.author?.name || 'Church Staff'}</span>
           </div>
