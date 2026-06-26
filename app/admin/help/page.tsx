@@ -231,7 +231,7 @@ export default function HelpPage() {
           </div>
 
           {/* Contact Support */}
-          <div className="bg-blue-50 rounded-lg border border-blue-200">
+          {/* <div className="bg-blue-50 rounded-lg border border-blue-200">
             <div className="p-6">
               <h2 className="text-xl font-semibold text-blue-900 mb-2">📞 Need More Help?</h2>
               <p className="text-blue-800 mb-4">
@@ -243,7 +243,7 @@ export default function HelpPage() {
                 <p><strong>Hours:</strong> Monday-Friday, 9 AM - 5 PM</p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

@@ -37,6 +37,14 @@ interface WebsiteSettings {
   contactPhone: string;
   address: string;
   serviceTimes: string;
+
+  // Footer
+  footerLogoUrl?: string;
+  footerInstagramUrl?: string;
+  footerFacebookUrl?: string;
+  footerYoutubeUrl?: string;
+  footerCopyrightText?: string;
+  footerCommunityText?: string;
   
   // Mass Schedule Section
   massScheduleTitle?: string;
@@ -111,6 +119,14 @@ const defaultSettings: WebsiteSettings = {
     contactPhone: '(555) 123-4567',
     address: 'St. Joseph Church\n790 Salem Street\nMalden, MA 02148',
     serviceTimes: 'Sundays at 10:00 AM and 6:00 PM',
+
+    // Footer
+    footerLogoUrl: '/images/tiwalaupdated.png',
+    footerInstagramUrl: '',
+    footerFacebookUrl: '',
+    footerYoutubeUrl: '',
+    footerCopyrightText: '© {year} Filipino Apostolate of Boston. All rights reserved.',
+    footerCommunityText: 'North Shore and South Shore Communities',
     
     // Mass Schedule Section
     massScheduleTitle: 'Mass Schedule',
@@ -163,6 +179,7 @@ export default function WebsiteSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [settings, setSettings] = useState<WebsiteSettings>(defaultSettings);
   const [imageUploading, setImageUploading] = useState(false);
+  const [footerLogoUploading, setFooterLogoUploading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,6 +258,27 @@ export default function WebsiteSettingsPage() {
       alert('Failed to upload logo image. Please try again.');
     } finally {
       setImageUploading(false);
+    }
+  };
+
+  const handleFooterLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    setFooterLogoUploading(true);
+    try {
+      const result = await uploadToSupabaseStorage(file, 'image');
+      setSettings(prev => ({ ...prev, footerLogoUrl: result.url }));
+    } catch (error) {
+      console.error('Error uploading footer logo:', error);
+      alert('Failed to upload footer logo. Please try again.');
+    } finally {
+      setFooterLogoUploading(false);
     }
   };
 
@@ -687,6 +725,121 @@ export default function WebsiteSettingsPage() {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="e.g., Sundays at 10:00 AM and 6:00 PM, Wednesdays at 7:00 PM"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Section */}
+          <div className="bg-white rounded-lg shadow-sm border">
+            <div className="p-6 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">Footer Section</h2>
+              <p className="text-gray-600 mt-1">Logo, social links, and footer text displayed at the bottom of the website</p>
+            </div>
+            <div className="p-6 space-y-6">
+              <div>
+                <label htmlFor="footerLogo" className="block text-sm font-medium text-gray-700 mb-2">
+                  Footer Logo
+                </label>
+                <input
+                  type="file"
+                  id="footerLogo"
+                  accept="image/*"
+                  onChange={handleFooterLogoUpload}
+                  disabled={footerLogoUploading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                {footerLogoUploading && <p className="text-sm text-gray-500 mt-2">Uploading logo...</p>}
+                {settings.footerLogoUrl && (
+                  <div className="mt-4 inline-block">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={normalizeMediaUrl(settings.footerLogoUrl)} alt="Footer logo preview" className="h-32 w-32 object-contain rounded-lg border bg-white" />
+                    <button
+                      type="button"
+                      onClick={() => setSettings(prev => ({ ...prev, footerLogoUrl: '' }))}
+                      className="mt-2 text-sm text-red-600 hover:text-red-700"
+                    >
+                      Remove logo
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label htmlFor="footerInstagramUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    Instagram Link
+                  </label>
+                  <input
+                    type="url"
+                    id="footerInstagramUrl"
+                    name="footerInstagramUrl"
+                    value={settings.footerInstagramUrl || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="https://www.instagram.com/..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="footerFacebookUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    Facebook Link
+                  </label>
+                  <input
+                    type="url"
+                    id="footerFacebookUrl"
+                    name="footerFacebookUrl"
+                    value={settings.footerFacebookUrl || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="https://www.facebook.com/..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="footerYoutubeUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                    YouTube Link
+                  </label>
+                  <input
+                    type="url"
+                    id="footerYoutubeUrl"
+                    name="footerYoutubeUrl"
+                    value={settings.footerYoutubeUrl || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="https://www.youtube.com/..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="footerCopyrightText" className="block text-sm font-medium text-gray-700 mb-2">
+                  Copyright Text
+                </label>
+                <input
+                  type="text"
+                  id="footerCopyrightText"
+                  name="footerCopyrightText"
+                  value={settings.footerCopyrightText || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="© {year} Filipino Apostolate of Boston. All rights reserved."
+                />
+                <p className="text-sm text-gray-500 mt-1">Use {'{year}'} to automatically insert the current year.</p>
+              </div>
+
+              <div>
+                <label htmlFor="footerCommunityText" className="block text-sm font-medium text-gray-700 mb-2">
+                  Community Text
+                </label>
+                <input
+                  type="text"
+                  id="footerCommunityText"
+                  name="footerCommunityText"
+                  value={settings.footerCommunityText || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="North Shore and South Shore Communities"
                 />
               </div>
             </div>

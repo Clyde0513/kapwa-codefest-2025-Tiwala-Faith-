@@ -36,6 +36,14 @@ interface WebsiteSettings {
   contactPhone: string;
   address: string;
   serviceTimes: string;
+
+  // Footer
+  footerLogoUrl?: string;
+  footerInstagramUrl?: string;
+  footerFacebookUrl?: string;
+  footerYoutubeUrl?: string;
+  footerCopyrightText?: string;
+  footerCommunityText?: string;
   
   // Mass Schedule Section
   massScheduleTitle?: string;
@@ -109,6 +117,14 @@ const settingsSchema = z.object({
   contactPhone: z.string().max(50, 'Phone number must be less than 50 characters').optional(),
   address: z.string().max(500, 'Address must be less than 500 characters').optional(),
   serviceTimes: z.string().max(200, 'Service times must be less than 200 characters').optional(),
+
+  // Footer
+  footerLogoUrl: z.string().url('Invalid footer logo URL').optional().or(z.literal('')),
+  footerInstagramUrl: z.string().url('Invalid footer Instagram URL').optional().or(z.literal('')),
+  footerFacebookUrl: z.string().url('Invalid footer Facebook URL').optional().or(z.literal('')),
+  footerYoutubeUrl: z.string().url('Invalid footer YouTube URL').optional().or(z.literal('')),
+  footerCopyrightText: z.string().max(200, 'Footer copyright text must be less than 200 characters').optional(),
+  footerCommunityText: z.string().max(200, 'Footer community text must be less than 200 characters').optional(),
   
   // Mass Schedule Section
   massScheduleTitle: z.string().max(100, 'Mass schedule title must be less than 100 characters').optional(),
@@ -186,6 +202,14 @@ const defaultSettings = {
   contactPhone: '(555) 123-4567',
   address: 'St. Joseph Church\n790 Salem Street\nMalden, MA 02148',
   serviceTimes: 'Sundays at 10:00 AM and 6:00 PM',
+
+  // Footer
+  footerLogoUrl: '/images/tiwalaupdated.png',
+  footerInstagramUrl: '',
+  footerFacebookUrl: '',
+  footerYoutubeUrl: '',
+  footerCopyrightText: '© {year} Filipino Apostolate of Boston. All rights reserved.',
+  footerCommunityText: 'North Shore and South Shore Communities',
   
   // Mass Schedule Section
   massScheduleTitle: 'Mass Schedule',
