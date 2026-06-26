@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { normalizeMediaUrl } from '../../lib/supabase-media';
 
 interface Settings {
   eventsTitle?: string;
@@ -125,7 +126,7 @@ export default function Events() {
           return {
             id: event.id,
             title: event.title,
-            image: event.imageUrl || '/images/Mass.png',
+            image: normalizeMediaUrl(event.imageUrl || '/images/Mass.png'),
             venue: locationParts[0] || 'Location TBD',
             address: locationParts[1] || '',
             cityState: locationParts.slice(2).join(', '),

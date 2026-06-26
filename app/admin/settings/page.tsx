@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { uploadToSupabaseStorage } from '../../../lib/supabase-media';
+import { normalizeMediaUrl, uploadToSupabaseStorage } from '../../../lib/supabase-media';
 
 interface WebsiteSettings {
   // Basic Information
@@ -494,7 +494,7 @@ export default function WebsiteSettingsPage() {
                 {settings.logoImageUrl && (
                   <div className="mt-4 inline-block">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={settings.logoImageUrl} alt="Mission logo preview" className="h-40 w-40 object-contain rounded-lg border bg-white" />
+                    <img src={normalizeMediaUrl(settings.logoImageUrl)} alt="Mission logo preview" className="h-40 w-40 object-contain rounded-lg border bg-white" />
                     <button
                       type="button"
                       onClick={() => setSettings(prev => ({ ...prev, logoImageUrl: '' }))}

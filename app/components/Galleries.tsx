@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { normalizeMediaUrl } from '../../lib/supabase-media';
 
 interface Photo {
   id: string;
@@ -11,9 +12,16 @@ interface Photo {
   height?: number;
 }
 
+interface Video {
+  id: string;
+  url: string;
+  caption?: string | null;
+}
+
 export default function Galleries() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,16 +42,21 @@ export default function Galleries() {
     fetchPhotos();
   }, []);
 
-  // Sample videos - you can add actual video URLs here
-  const videos = [
-    {
-      id: 1,
-      title: 'Video 1',
-      thumbnail: '/images/video_thumbnail_1.jpg', // placeholder
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // placeholder
-    },
-    // Add more videos as needed
-  ];
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const response = await fetch('/api/videos');
+        const data = await response.json();
+        if (response.ok) {
+          setVideos(data.videos || []);
+        }
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+      }
+    };
+
+    fetchVideos();
+  }, []);
 
   return (
     <section id="galleries" className="py-20 px-4" style={{ backgroundColor: '#faecc8' }}>
@@ -71,10 +84,10 @@ export default function Galleries() {
                   <div
                     key={photo.id}
                     className="relative aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer group"
-                    onClick={() => setSelectedPhoto(photo.url)}
+                    onClick={() => setSelectedPhoto(normalizeMediaUrl(photo.url))}
                   >
                     <Image
-                      src={photo.url}
+                      src={normalizeMediaUrl(photo.url)}
                       alt={photo.caption || 'Gallery photo'}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
@@ -111,28 +124,30 @@ export default function Galleries() {
           </h3>
           
           {/* Video Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videos.map((video) => (
-              <div
-                key={video.id}
-                className="relative aspect-video rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-gray-200"
-              >
-                <iframe
-                  src={video.videoUrl}
-                  title={video.title}
-                  className="absolute inset-0 w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              </div>
-            ))}
-          </div>
-          
-          {/* Add more videos message */}
-          {videos.length === 0 && (
-            <p className="text-center text-gray-600 text-lg">
-              Videos coming soon...
-            </p>
+          {videos.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {videos.map((video) => (
+                <div
+                  key={video.id}
+                  className="relative aspect-video rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-gray-200"
+                >
+                  <video
+                    src={normalizeMediaUrl(video.url)}
+                    title={video.caption || 'Gallery video'}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    controls
+                    preload="metadata"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600 text-lg mb-4">No videos in gallery yet.</p>
+              <p className="text-gray-500 text-sm">
+                Upload videos through the admin panel to see them here.
+              </p>
+            </div>
           )}
         </div>
       </div>

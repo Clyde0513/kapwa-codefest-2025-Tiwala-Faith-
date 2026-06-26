@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { db } from '../../lib/db-utils';
+import { normalizeMediaUrl } from '../../lib/supabase-media';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,6 +90,7 @@ async function getMissionSettings(): Promise<Required<MissionSettings>> {
 export default async function MissionPage() {
   const settings = await getMissionSettings();
   const keywords = parseKeywords(settings.missionKeywordsText);
+  const logoImageUrl = normalizeMediaUrl(settings.logoImageUrl || '/images/tiwalaupdated.png');
 
   return (
     <main className="min-h-screen bg-white">
@@ -179,7 +181,7 @@ export default async function MissionPage() {
               <div className="text-center mb-8">
                 <div className="inline-block bg-white p-6 rounded-2xl shadow-lg border-2 border-gray-100">
                   <Image
-                    src={settings.logoImageUrl || '/images/tiwalaupdated.png'}
+                    src={logoImageUrl}
                     alt="Filipino Apostolate of Boston Logo"
                     width={300}
                     height={300}

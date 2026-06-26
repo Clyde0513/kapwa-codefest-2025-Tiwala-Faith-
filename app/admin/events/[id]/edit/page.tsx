@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { uploadToSupabaseStorage } from '../../../../../lib/supabase-media';
+import { normalizeMediaUrl, uploadToSupabaseStorage } from '../../../../../lib/supabase-media';
 
 export default function EditEventPage() {
   const router = useRouter();
@@ -297,7 +297,7 @@ export default function EditEventPage() {
                 {formData.imageUrl && (
                   <div className="mt-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={formData.imageUrl} alt="Event preview" className="h-40 w-full object-cover rounded-lg border" />
+                    <img src={normalizeMediaUrl(formData.imageUrl)} alt="Event preview" className="h-40 w-full object-cover rounded-lg border" />
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}

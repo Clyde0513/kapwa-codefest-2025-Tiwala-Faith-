@@ -16,6 +16,39 @@ export type SupabaseUploadResult = {
   blurDataUrl?: string;
 };
 
+export function proxiedSupabaseMediaUrl(publicId: string): string {
+  return `/api/media/proxy?path=${encodeURIComponent(publicId)}`;
+}
+
+export function normalizeMediaUrl(value: string): string {
+  if (!value) {
+    return value;
+  }
+
+  if (value.startsWith('/api/media/proxy') || value.startsWith('/images/')) {
+    return value;
+  }
+
+  try {
+    const url = new URL(value);
+    const marker = '/storage/v1/object/public/';
+    const markerIndex = url.pathname.indexOf(marker);
+
+    if (markerIndex === -1) {
+      return value;
+    }
+
+    const pathWithBucket = decodeURIComponent(url.pathname.slice(markerIndex + marker.length));
+    const pathParts = pathWithBucket.split('/');
+    pathParts.shift();
+    const objectPath = pathParts.join('/');
+
+    return objectPath ? proxiedSupabaseMediaUrl(objectPath) : value;
+  } catch {
+    return value;
+  }
+}
+
 // Supabase media URL transform helpers
 export function supabaseMediaUrl(publicId: string, transforms = 'f_auto,q_auto'): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -70,9 +103,9 @@ export function supabaseMediaUrl(publicId: string, transforms = 'f_auto,q_auto')
     .map((segment) => encodeURIComponent(segment))
     .join('/');
 
-  const url = `${supabaseUrl}/storage/v1/object/public/${bucket}/${normalizedPath}`;
+  const url = proxiedSupabaseMediaUrl(publicId);
   const query = params.toString();
-  return query ? `${url}?${query}` : url;
+  return query ? `${url}&${query}` : url;
 }
 
 // Common transform presets
@@ -174,7 +207,7 @@ export async function uploadToSupabaseStorage(
 
   return {
     publicId: payload.publicId,
-    url: payload.url,
+    url: normalizeMediaUrl(payload.url || proxiedSupabaseMediaUrl(payload.publicId)),
     width: metadata.width,
     height: metadata.height,
     format,

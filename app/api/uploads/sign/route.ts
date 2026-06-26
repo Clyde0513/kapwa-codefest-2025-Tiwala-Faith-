@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { checkRateLimit } from '../../../../lib/rate-limit';
 import { getSupabaseAdmin, SUPABASE_MEDIA_BUCKET } from '../../../../lib/supabase';
+import { proxiedSupabaseMediaUrl } from '../../../../lib/supabase-media';
 
 export const runtime = 'nodejs';
 
@@ -108,12 +109,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { data: publicUrlData } = supabase.storage.from(SUPABASE_MEDIA_BUCKET).getPublicUrl(publicId);
-
     return NextResponse.json({
       ok: true,
       publicId,
-      url: publicUrlData.publicUrl,
+      url: proxiedSupabaseMediaUrl(publicId),
       bucket: SUPABASE_MEDIA_BUCKET,
       format: extension,
       bytes: file.size,
