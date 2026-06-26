@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { supabaseDb } from '../../lib/supabase-db';
+import { formatEasternDate } from '../../lib/time';
 
 interface DatabaseBlogListProps {
   limit?: number;
@@ -49,7 +50,7 @@ export default async function DatabaseBlogList({ limit }: DatabaseBlogListProps)
             </Link>
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            {new Date(post.createdAt).toLocaleDateString()} • {post.author?.name || 'Church Admin'}
+            {formatEasternDate(post.createdAt)} • {post.author?.name || 'Church Admin'}
           </p>
           <p className="text-gray-800 mb-4">
             {post.content.length > 220 

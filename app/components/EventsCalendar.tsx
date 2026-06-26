@@ -5,6 +5,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import { formatEasternDateTime } from '../../lib/time';
 
 interface CalendarEvent {
   id: string;
@@ -74,8 +75,8 @@ export default function EventsCalendar() {
         const details = `
 Title: ${eventData.title}
 ${eventData.description ? `Description: ${eventData.description}\n` : ''}
-Start: ${new Date(eventData.startsAt).toLocaleString()}
-End: ${new Date(eventData.endsAt).toLocaleString()}
+Start: ${formatEasternDateTime(eventData.startsAt)} ET
+End: ${formatEasternDateTime(eventData.endsAt)} ET
 ${eventData.location ? `Location: ${eventData.location}\n` : ''}
 ${eventData.url ? `URL: ${eventData.url}\n` : ''}
         `.trim();

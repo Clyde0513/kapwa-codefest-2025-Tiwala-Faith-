@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { normalizeMediaUrl, uploadToSupabaseStorage } from '../../../../../lib/supabase-media';
+import { easternDateInputValue, easternDateTimeLocalValue, easternLocalInputToUtcIso } from '../../../../../lib/time';
 
 export default function EditEventPage() {
   const router = useRouter();
@@ -31,19 +32,15 @@ export default function EditEventPage() {
         if (response.ok) {
           const event = await response.json();
           
-          // Convert dates to local datetime-local format
-          const startDate = new Date(event.startsAt);
-          const endDate = new Date(event.endsAt);
-          
           setFormData({
             title: event.title,
             description: event.description || '',
             startsAt: event.allDay 
-              ? startDate.toISOString().split('T')[0]
-              : startDate.toISOString().slice(0, 16),
+              ? easternDateInputValue(event.startsAt)
+              : easternDateTimeLocalValue(event.startsAt),
             endsAt: event.allDay
-              ? endDate.toISOString().split('T')[0]
-              : endDate.toISOString().slice(0, 16),
+              ? easternDateInputValue(event.endsAt)
+              : easternDateTimeLocalValue(event.endsAt),
             location: event.location || '',
             imageUrl: event.imageUrl || '',
             allDay: event.allDay,
@@ -81,18 +78,14 @@ export default function EditEventPage() {
       let endsAt: string;
 
       if (formData.allDay) {
-        // For all-day events, set start to beginning of day and end to end of day
-        const startDate = new Date(formData.startsAt + 'T00:00:00');
-        const endDate = new Date(formData.startsAt + 'T23:59:59');
-        
-        if (isNaN(startDate.getTime())) {
+        if (Number.isNaN(new Date(`${formData.startsAt}T00:00:00`).getTime())) {
           alert('Invalid start date');
           setLoading(false);
           return;
         }
-        
-        startsAt = startDate.toISOString();
-        endsAt = endDate.toISOString();
+
+        startsAt = easternLocalInputToUtcIso(formData.startsAt, 'start');
+        endsAt = easternLocalInputToUtcIso(formData.startsAt, 'end');
       } else {
         // For timed events, validate both start and end times
         if (!formData.endsAt) {
@@ -101,8 +94,8 @@ export default function EditEventPage() {
           return;
         }
 
-        const startDate = new Date(formData.startsAt);
-        const endDate = new Date(formData.endsAt);
+        const startDate = new Date(easternLocalInputToUtcIso(formData.startsAt));
+        const endDate = new Date(easternLocalInputToUtcIso(formData.endsAt));
         
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
           alert('Invalid date or time');

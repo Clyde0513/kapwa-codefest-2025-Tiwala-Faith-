@@ -1,6 +1,7 @@
 import { supabaseDb } from '../../../lib/supabase-db';
 import Link from 'next/link';
 import PostInteractions from '../../../components/PostInteractions';
+import { formatEasternDate } from '../../../lib/time';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -60,7 +61,7 @@ export default async function PostPage({ params }: Props) {
           <div className="flex items-center space-x-4 text-sm text-gray-600 mb-6">
             {hasValidCreatedAt ? (
               <time dateTime={createdAt.toISOString()}>
-                {createdAt.toLocaleDateString()}
+                {formatEasternDate(createdAt)}
               </time>
             ) : (
               <span>Unknown date</span>

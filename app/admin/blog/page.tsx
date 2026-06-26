@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { supabaseContentClient } from '../../../lib/supabase-content-client';
+import { formatEasternDate } from '../../../lib/time';
 
 export default async function BlogManagementPage() {
   // Fetch blog posts from Sanity
@@ -141,7 +142,7 @@ export default async function BlogManagementPage() {
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span>{post.authorName || 'Church Staff'}</span>
                         <span>•</span>
-                        <span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'Not published'}</span>
+                        <span>{post.publishedAt ? formatEasternDate(post.publishedAt) : 'Not published'}</span>
                         <span>•</span>
                         <span>Slug: {post.slug.current}</span>
                       </div>

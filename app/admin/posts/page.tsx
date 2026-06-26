@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatEasternDate } from '../../../lib/time';
 
 interface Post {
   id: string;
@@ -282,7 +283,7 @@ export default function PostsManagementPage() {
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span>{post.author?.name || 'Church Staff'}</span>
                         <span>•</span>
-                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                        <span>{formatEasternDate(post.createdAt)}</span>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">

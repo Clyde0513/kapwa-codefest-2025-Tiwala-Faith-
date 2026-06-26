@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { db } from '../../lib/db-utils';
 import { requireAdminAuth } from '../../lib/auth';
 import LogoutButton from '../../components/LogoutButton';
+import { formatEasternDate } from '../../lib/time';
 
 export default async function AdminDashboard() {
   // Check authentication with error handling
@@ -300,7 +301,7 @@ export default async function AdminDashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{post.title}</p>
                         <p className="text-sm text-gray-500">
-                          by {post.authorName || 'Church Staff'} • {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'Draft'}
+                          by {post.authorName || 'Church Staff'} • {post.publishedAt ? formatEasternDate(post.publishedAt) : 'Draft'}
                         </p>
                       </div>
                       <div className="flex-shrink-0">
@@ -342,7 +343,7 @@ export default async function AdminDashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{event.title}</p>
                       <p className="text-sm text-gray-500">
-                        {new Date(event.startsAt).toLocaleDateString()} • {event.location || 'No location'}
+                        {formatEasternDate(event.startsAt)} • {event.location || 'No location'}
                       </p>
                     </div>
                     <div className="flex-shrink-0">

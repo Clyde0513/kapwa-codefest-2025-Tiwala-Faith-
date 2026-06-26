@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { supabaseDb } from '../../../lib/supabase-db';
+import { formatEasternDate, formatEasternTime } from '../../../lib/time';
 
 export default async function EventsPage() {
   let events: any[] = [];
@@ -121,7 +122,7 @@ export default async function EventsPage() {
                       )}
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span>
-                          📅 {new Date(event.startsAt).toLocaleDateString()} at {new Date(event.startsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          📅 {formatEasternDate(event.startsAt)} at {event.allDay ? 'All Day' : formatEasternTime(event.startsAt)} ET
                         </span>
                         {event.location && (
                           <>
@@ -178,7 +179,7 @@ export default async function EventsPage() {
                       )}
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span>
-                          📅 {new Date(event.startsAt).toLocaleDateString()} at {new Date(event.startsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          📅 {formatEasternDate(event.startsAt)} at {event.allDay ? 'All Day' : formatEasternTime(event.startsAt)} ET
                         </span>
                         {event.location && (
                           <>

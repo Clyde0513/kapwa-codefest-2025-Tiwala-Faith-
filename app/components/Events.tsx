@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { normalizeMediaUrl } from '../../lib/supabase-media';
+import { formatEasternMonthDay, formatEasternTime, formatEasternWeekdayDate } from '../../lib/time';
 
 interface Settings {
   eventsTitle?: string;
@@ -130,26 +131,11 @@ export default function Events() {
             venue: locationParts[0] || 'Location TBD',
             address: locationParts[1] || '',
             cityState: locationParts.slice(2).join(', '),
-            date: hasValidDate
-              ? startsAt.toLocaleDateString(undefined, {
-                  weekday: 'long',
-                  month: '2-digit',
-                  day: '2-digit',
-                  year: '2-digit',
-                })
-              : 'Date TBD',
+            date: hasValidDate ? formatEasternWeekdayDate(startsAt) : 'Date TBD',
             time: event.allDay || !hasValidDate
               ? 'All Day'
-              : startsAt.toLocaleTimeString(undefined, {
-                  hour: 'numeric',
-                  minute: '2-digit',
-                }),
-            displayDate: hasValidDate
-              ? startsAt.toLocaleDateString(undefined, {
-                  month: 'long',
-                  day: 'numeric',
-                })
-              : 'Upcoming',
+              : formatEasternTime(startsAt),
+            displayDate: hasValidDate ? formatEasternMonthDay(startsAt) : 'Upcoming',
             description: event.description || 'More details coming soon.',
           };
         });

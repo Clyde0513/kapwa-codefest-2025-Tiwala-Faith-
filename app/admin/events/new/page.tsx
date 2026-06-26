@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { normalizeMediaUrl, uploadToSupabaseStorage } from '../../../../lib/supabase-media';
+import { easternDateTimeLocalValue, easternLocalInputToUtcIso } from '../../../../lib/time';
 
 export default function NewEventPage() {
   const router = useRouter();
@@ -36,18 +37,14 @@ export default function NewEventPage() {
       let endsAt: string;
 
       if (formData.allDay) {
-        // For all-day events, set start to beginning of day and end to end of day
-        const startDate = new Date(formData.startsAt + 'T00:00:00');
-        const endDate = new Date(formData.startsAt + 'T23:59:59');
-        
-        if (isNaN(startDate.getTime())) {
+        if (Number.isNaN(new Date(`${formData.startsAt}T00:00:00`).getTime())) {
           alert('Invalid start date');
           setLoading(false);
           return;
         }
-        
-        startsAt = startDate.toISOString();
-        endsAt = endDate.toISOString();
+
+        startsAt = easternLocalInputToUtcIso(formData.startsAt, 'start');
+        endsAt = easternLocalInputToUtcIso(formData.startsAt, 'end');
       } else {
         // For timed events, validate both start and end times
         if (!formData.endsAt) {
@@ -56,8 +53,8 @@ export default function NewEventPage() {
           return;
         }
 
-        const startDate = new Date(formData.startsAt);
-        const endDate = new Date(formData.endsAt);
+        const startDate = new Date(easternLocalInputToUtcIso(formData.startsAt));
+        const endDate = new Date(easternLocalInputToUtcIso(formData.endsAt));
         
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
           alert('Invalid date or time');
@@ -139,14 +136,13 @@ export default function NewEventPage() {
 
   // Set default times
   const setDefaultTimes = () => {
-    const now = new Date();
-    const startTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // Next week
+    const startTime = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Next week
     const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
     
     setFormData(prev => ({
       ...prev,
-      startsAt: startTime.toISOString().slice(0, 16),
-      endsAt: endTime.toISOString().slice(0, 16),
+      startsAt: easternDateTimeLocalValue(startTime),
+      endsAt: easternDateTimeLocalValue(endTime),
     }));
   };
 

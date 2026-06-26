@@ -1,6 +1,7 @@
 import Header from '../components/Header';
 import { supabaseDb } from '../../lib/supabase-db';
 import Link from 'next/link';
+import { formatEasternDate } from '../../lib/time';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,7 +85,7 @@ export default async function ArchivePage() {
                       <span>•</span>
                       {hasValidCreatedAt ? (
                         <time dateTime={createdAt.toISOString()}>
-                          {createdAt.toLocaleDateString()}
+                          {formatEasternDate(createdAt)}
                         </time>
                       ) : (
                         <span>Unknown date</span>

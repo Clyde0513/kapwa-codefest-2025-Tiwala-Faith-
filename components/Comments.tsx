@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatEasternDateTime } from '../lib/time';
 
 interface Comment {
   id: string;
@@ -88,13 +89,7 @@ export default function Comments({ postId }: CommentsProps) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return `${formatEasternDateTime(dateString)} ET`;
   };
 
   const renderComment = (comment: Comment, isReply = false) => (

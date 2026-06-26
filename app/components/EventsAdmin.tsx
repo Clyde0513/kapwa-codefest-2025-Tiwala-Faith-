@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { easternDateTimeLocalValue, easternLocalInputToUtcIso, formatEasternDateTime } from '../../lib/time';
 
 interface Event {
   id: string;
@@ -92,8 +93,8 @@ export default function EventsAdmin() {
     setFormData({
       title: event.title,
       description: event.description || '',
-      startsAt: event.startsAt.slice(0, 16), // Format for datetime-local input
-      endsAt: event.endsAt.slice(0, 16),
+      startsAt: easternDateTimeLocalValue(event.startsAt),
+      endsAt: easternDateTimeLocalValue(event.endsAt),
       allDay: event.allDay,
       location: event.location || '',
       url: event.url || '',
@@ -138,7 +139,11 @@ export default function EventsAdmin() {
         const response = await fetch('/api/events', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            startsAt: easternLocalInputToUtcIso(formData.startsAt),
+            endsAt: easternLocalInputToUtcIso(formData.endsAt),
+          }),
         });
 
         if (response.ok) {
@@ -154,7 +159,11 @@ export default function EventsAdmin() {
         const response = await fetch(`/api/events/${editingEvent.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            ...formData,
+            startsAt: easternLocalInputToUtcIso(formData.startsAt),
+            endsAt: easternLocalInputToUtcIso(formData.endsAt),
+          }),
         });
 
         if (response.ok) {
@@ -346,11 +355,11 @@ export default function EventsAdmin() {
                     <div className="mt-2 space-y-1 text-sm text-gray-700">
                       <p>
                         <span className="font-semibold">Start:</span>{' '}
-                        {new Date(event.startsAt).toLocaleString()}
+                        {formatEasternDateTime(event.startsAt)} ET
                       </p>
                       <p>
                         <span className="font-semibold">End:</span>{' '}
-                        {new Date(event.endsAt).toLocaleString()}
+                        {formatEasternDateTime(event.endsAt)} ET
                       </p>
                       {event.location && (
                         <p>
