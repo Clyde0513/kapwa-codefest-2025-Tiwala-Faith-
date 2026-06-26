@@ -1,21 +1,28 @@
 import Header from '../components/Header';
-import { prisma } from '../../lib/prisma';
+import { supabaseDb } from '../../lib/supabase-db';
 import Link from 'next/link';
 
 export default async function ArchivePage() {
-  // Fetch archived posts from database
-  const archivedPosts = await prisma.post.findMany({
-    where: { 
-      published: true,
-      archived: true 
-    },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      author: {
-        select: { name: true, email: true },
+  let archivedPosts: any[] = [];
+
+  try {
+    // Fetch archived posts from database
+    archivedPosts = await supabaseDb.post.findMany({
+      where: {
+        published: true,
+        archived: true,
       },
-    },
-  });
+      orderBy: { createdAt: 'desc' },
+      include: {
+        author: {
+          select: { name: true, email: true },
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching archived posts:', error);
+    archivedPosts = [];
+  }
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#faecc8' }}>
@@ -111,3 +118,6 @@ export default async function ArchivePage() {
     </main>
   )
 }
+
+
+

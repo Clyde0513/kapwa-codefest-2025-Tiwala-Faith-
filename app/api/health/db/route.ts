@@ -1,35 +1,35 @@
-import { prisma } from '../../../../lib/prisma';
+import { supabaseDb } from '../../../../lib/supabase-db';
 
 export const runtime = 'nodejs'; // Prisma requires Node runtime
 
 export async function GET() {
   try {
     // Test database connection with a simple query
-    await prisma.$queryRaw`SELECT 1`;
+    await supabaseDb.$queryRaw`SELECT 1`;
     
     // Get counts one by one to avoid connection issues
     let users = 0, posts = 0, comments = 0, events = 0;
     
     try {
-      users = await prisma.user.count();
+      users = await supabaseDb.user.count();
     } catch (e) {
       console.warn('Users count failed:', e);
     }
     
     try {
-      posts = await prisma.post.count();
+      posts = await supabaseDb.post.count();
     } catch (e) {
       console.warn('Posts count failed:', e);
     }
     
     try {
-      comments = await prisma.comment.count();
+      comments = await supabaseDb.comment.count();
     } catch (e) {
       console.warn('Comments count failed:', e);
     }
     
     try {
-      events = await prisma.event.count();
+      events = await supabaseDb.event.count();
     } catch (e) {
       console.warn('Events count failed:', e);
     }
@@ -63,3 +63,6 @@ export async function GET() {
     );
   }
 }
+
+
+

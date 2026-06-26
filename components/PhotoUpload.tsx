@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { uploadToCloudinary, savePhotoToDatabase } from '../lib/cloudinary';
+import { uploadToSupabaseStorage, savePhotoToDatabase } from '@/lib/supabase-media';
 
 interface PhotoUploadProps {
   postId?: string;
@@ -36,14 +36,14 @@ export default function PhotoUpload({ postId, uploaderId, onUploadComplete }: Ph
     setProgress(0);
 
     try {
-      // Step 1: Upload to Cloudinary
+      // Step 1: Upload to Supabase storage
       setProgress(25);
-      const cloudinaryResult = await uploadToCloudinary(file);
+      const uploadResult = await uploadToSupabaseStorage(file);
       
       // Step 2: Save to database
       setProgress(75);
       const dbResult = await savePhotoToDatabase({
-        ...cloudinaryResult,
+        ...uploadResult,
         caption: file.name,
         postId,
         uploaderId,
@@ -134,3 +134,4 @@ export default function PhotoUpload({ postId, uploaderId, onUploadComplete }: Ph
     </div>
   );
 }
+

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { uploadToCloudinary, savePhotoToDatabase, saveVideoToDatabase } from '../lib/cloudinary';
+import { uploadToSupabaseStorage, savePhotoToDatabase, saveVideoToDatabase } from '../lib/supabase-media';
 
 interface MediaUploadProps {
   postId?: string;
@@ -57,21 +57,21 @@ export default function MediaUpload({
     setProgress(0);
 
     try {
-      // Step 1: Upload to Cloudinary
+      // Step 1: Upload to Supabase storage
       setProgress(25);
-      const cloudinaryResult = await uploadToCloudinary(file);
+      const uploadResult = await uploadToSupabaseStorage(file, isVideo ? 'video' : 'image');
       
       // Step 2: Save to database
       setProgress(75);
       const dbResult = isImage 
         ? await savePhotoToDatabase({
-            ...cloudinaryResult,
+            ...uploadResult,
             caption: file.name,
             postId,
             uploaderId,
           })
         : await saveVideoToDatabase({
-            ...cloudinaryResult,
+            ...uploadResult,
             caption: file.name,
             postId,
             uploaderId,

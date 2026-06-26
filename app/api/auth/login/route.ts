@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateLogin, createAdminSession, isAuthorizedEmail } from '../../../../lib/auth';
+import { isAuthorizedEmail, loginAdmin } from '../../../../lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,27 +21,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate credentials
-    const { valid, name } = validateLogin(email, password);
-    
-    if (!valid) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
-    }
-
-    // Create session
-    await createAdminSession(email, name || 'Admin');
+    const session = await loginAdmin(email, password);
 
     return NextResponse.json(
       { 
         success: true, 
         message: 'Login successful',
         user: {
-          email,
-          name: name || 'Admin',
-          isAdmin: true
+          email: session.email,
+          name: session.name,
+          isAdmin: session.isAdmin,
         }
       },
       { status: 200 }
@@ -49,6 +38,21 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('Login error:', error);
+
+    if (error instanceof Error && error.message.includes('Invalid credentials')) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+
+    if (error instanceof Error && error.message.includes('Access denied')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 403 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

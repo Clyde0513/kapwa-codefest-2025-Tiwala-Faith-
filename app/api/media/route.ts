@@ -26,41 +26,51 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create media record in database
-    const media = await db.createPhoto({
-      data: {
-        publicId,
-        url,
-        width: parseInt(width),
-        height: parseInt(height),
-        format,
-        bytes: parseInt(bytes),
-        mediaType: resolvedMediaType,
-        duration: body.duration ? parseFloat(body.duration) : null,
-        frameRate: body.frameRate ? parseFloat(body.frameRate) : null,
-        caption: body.caption || null,
-        postId: body.postId || null,
-        uploaderId: body.uploaderId || null,
-      },
-      include: {
-        uploader: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        post: {
-          select: {
-            id: true,
-            title: true,
-          },
+    const baseData = {
+      publicId,
+      url,
+      width: parseInt(width),
+      height: parseInt(height),
+      format,
+      bytes: parseInt(bytes),
+      caption: body.caption || null,
+      postId: body.postId || null,
+      uploaderId: body.uploaderId || null,
+    };
+
+    const include = {
+      uploader: {
+        select: {
+          id: true,
+          name: true,
         },
       },
-    });
+      post: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    };
+
+    const media =
+      resolvedMediaType === 'video'
+        ? await db.createVideo({
+            data: {
+              ...baseData,
+              duration: body.duration ? parseFloat(body.duration) : null,
+            },
+            include,
+          })
+        : await db.createPhoto({
+            data: baseData,
+            include,
+          });
 
     return NextResponse.json({ 
       ok: true, 
-      media 
+      media,
+      mediaType: resolvedMediaType,
     });
 
   } catch (error) {
@@ -110,34 +120,97 @@ export async function GET(req: NextRequest) {
       where.uploaderId = uploaderId;
     }
 
-    if (mediaType && ['image', 'video'].includes(mediaType)) {
-      where.mediaType = mediaType;
+    const include = {
+      uploader: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      post: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    };
+
+    if (mediaType === 'image') {
+      const media = await db.findManyPhotos({
+        where,
+        include,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: limit,
+        skip: offset,
+      });
+
+      const total = await db.countPhotos({ where }) as number;
+
+      return NextResponse.json({
+        ok: true,
+        media: media.map((item: any) => ({ ...item, mediaType: 'image' })),
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasMore: offset + limit < total,
+        },
+      });
     }
 
-    const media = await db.findManyPhotos({
-      where,
-      include: {
-        uploader: {
-          select: {
-            id: true,
-            name: true,
-          },
+    if (mediaType === 'video') {
+      const media = await db.findManyVideos({
+        where,
+        include,
+        orderBy: {
+          createdAt: 'desc',
         },
-        post: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: limit,
-      skip: offset,
-    });
+        take: limit,
+        skip: offset,
+      });
 
-    const total = await db.countPhotos({ where }) as number;
+      const total = await db.countVideos({ where }) as number;
+
+      return NextResponse.json({
+        ok: true,
+        media: media.map((item: any) => ({ ...item, mediaType: 'video' })),
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasMore: offset + limit < total,
+        },
+      });
+    }
+
+    const [photos, videos, photoTotal, videoTotal] = await Promise.all([
+      db.findManyPhotos({
+        where,
+        include,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      db.findManyVideos({
+        where,
+        include,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      db.countPhotos({ where }) as Promise<number>,
+      db.countVideos({ where }) as Promise<number>,
+    ]);
+
+    const merged = [
+      ...photos.map((item: any) => ({ ...item, mediaType: 'image' as const })),
+      ...videos.map((item: any) => ({ ...item, mediaType: 'video' as const })),
+    ].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+
+    const media = merged.slice(offset, offset + limit);
+    const total = Number(photoTotal) + Number(videoTotal);
 
     return NextResponse.json({
       ok: true,

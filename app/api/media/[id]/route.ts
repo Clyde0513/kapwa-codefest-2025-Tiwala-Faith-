@@ -1,19 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { supabaseDb } from '../../../../lib/supabase-db';
 
-// Delete media (soft delete - removes from Cloudinary and marks as deleted in DB)
+async function findMediaById(id: string) {
+  const photo = await supabaseDb.photo.findUnique({
+    where: { id },
+    include: {
+      uploader: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      post: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    },
+  });
+
+  if (photo) {
+    return { type: 'image' as const, data: photo };
+  }
+
+  const video = await supabaseDb.video.findUnique({
+    where: { id },
+    include: {
+      uploader: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      post: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    },
+  });
+
+  if (video) {
+    return { type: 'video' as const, data: video };
+  }
+
+  return null;
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    
-    // Get media record
-    const media = await prisma.photo.findUnique({
-      where: { id },
-      select: { id: true, publicId: true, postId: true, format: true },
-    });
+
+    const media = await findMediaById(id);
 
     if (!media) {
       return NextResponse.json(
@@ -22,18 +65,13 @@ export async function DELETE(
       );
     }
 
-    // TODO: Call Cloudinary API to delete the resource
-    // This would require server-side Cloudinary SDK
-    // const cloudinary = require('cloudinary').v2;
-    // await cloudinary.uploader.destroy(media.publicId, { resource_type: 'image' });
+    if (media.type === 'image') {
+      await supabaseDb.photo.delete({ where: { id } });
+    } else {
+      await supabaseDb.video.delete({ where: { id } });
+    }
 
-    // For now, just delete from database
-    // In production, you might want to soft delete instead
-    await prisma.photo.delete({
-      where: { id },
-    });
-
-    console.log('Media deleted:', media.publicId, media.format);
+    console.log('Media deleted:', media.data.publicId, media.type);
 
     return NextResponse.json({ 
       ok: true, 
@@ -58,10 +96,7 @@ export async function PATCH(
     const { id } = await params;
     const body = await req.json();
     
-    // Get current media record
-    const existingMedia = await prisma.photo.findUnique({
-      where: { id },
-    });
+    const existingMedia = await findMediaById(id);
 
     if (!existingMedia) {
       return NextResponse.json(
@@ -70,32 +105,46 @@ export async function PATCH(
       );
     }
 
-    // Update media with new data
-    const updatedMedia = await prisma.photo.update({
-      where: { id },
-      data: {
-        caption: body.caption !== undefined ? body.caption : existingMedia.caption,
-        // Add other updatable fields as needed
-      },
-      include: {
-        uploader: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        post: {
-          select: {
-            id: true,
-            title: true,
-          },
+    const include = {
+      uploader: {
+        select: {
+          id: true,
+          name: true,
         },
       },
-    });
+      post: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    };
+
+    const updatedMedia =
+      existingMedia.type === 'image'
+        ? await supabaseDb.photo.update({
+            where: { id },
+            data: {
+              caption: body.caption !== undefined ? body.caption : existingMedia.data.caption,
+            },
+            include,
+          })
+        : await supabaseDb.video.update({
+            where: { id },
+            data: {
+              caption: body.caption !== undefined ? body.caption : existingMedia.data.caption,
+            },
+            include,
+          });
 
     return NextResponse.json({ 
       ok: true, 
-      photo: updatedMedia // Keep the same response format for compatibility
+      media: {
+        ...updatedMedia,
+        mediaType: existingMedia.type,
+      },
+      photo: updatedMedia,
+      video: updatedMedia,
     });
 
   } catch (error) {
@@ -124,24 +173,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    
-    const media = await prisma.photo.findUnique({
-      where: { id },
-      include: {
-        uploader: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        post: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
-      },
-    });
+
+    const media = await findMediaById(id);
 
     if (!media) {
       return NextResponse.json(
@@ -152,7 +185,10 @@ export async function GET(
 
     return NextResponse.json({ 
       ok: true, 
-      media 
+      media: {
+        ...media.data,
+        mediaType: media.type,
+      },
     });
 
   } catch (error) {
@@ -163,3 +199,4 @@ export async function GET(
     );
   }
 }
+

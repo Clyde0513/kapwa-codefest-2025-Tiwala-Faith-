@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { supabaseDb } from '@/lib/supabase-db';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'postId is required' }, { status: 400 });
     }
 
-    const comments = await prisma.comment.findMany({
+    const comments = await supabaseDb.comment.findMany({
       where: { postId },
       include: {
         author: {
@@ -56,14 +56,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify post exists
-    const post = await prisma.post.findUnique({ where: { id: postId } });
+    const post = await supabaseDb.post.findUnique({ where: { id: postId } });
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
     let authorId: string | undefined;
     if (authorEmail) {
-      const user = await prisma.user.upsert({
+      const user = await supabaseDb.user.upsert({
         where: { email: authorEmail },
         update: {},
         create: { email: authorEmail, name: 'Church Member' },
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       authorId = user.id;
     }
 
-    const comment = await prisma.comment.create({
+    const comment = await supabaseDb.comment.create({
       data: { 
         postId, 
         content, 
@@ -95,3 +95,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 });
   }
 }
+
+
+

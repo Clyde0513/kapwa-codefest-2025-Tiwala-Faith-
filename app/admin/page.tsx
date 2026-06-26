@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { db } from '../../lib/db-utils';
-import { sanityClient } from '../../lib/sanityClient';
 import { requireAdminAuth } from '../../lib/auth';
 import LogoutButton from '../../components/LogoutButton';
 
@@ -364,3 +363,4 @@ export default async function AdminDashboard() {
     </div>
   );
 }
+

@@ -9,16 +9,16 @@ import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 
 // Go to https://www.sanity.io/docs/api-versioning to learn how API versioning works
-import {apiVersion, dataset, projectId} from './sanity/env'
-import {schema} from './sanity/schemaTypes'
-import {structure} from './sanity/structure'
+import {apiVersion, dataset, projectId} from './supabase-studio/env'
+import {schema} from './supabase-studio/schemaTypes'
+import {structure} from './supabase-studio/structure'
 
 export default defineConfig({
   basePath: '/studio',
   projectId,
   dataset,
   apiVersion,
-  // Add and edit the content schema in the './sanity/schemaTypes' folder
+  // Add and edit the content schema in the './supabase-studio/schemaTypes' folder
   schema,
   plugins: [
     structureTool({structure}),

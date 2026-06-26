@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { supabaseDb } from '@/lib/supabase-db';
 
 export const runtime = 'nodejs';
 
@@ -7,7 +7,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   try {
     const { id } = await params;
 
-    const event = await prisma.event.findUnique({
+    const event = await supabaseDb.event.findUnique({
       where: { id },
       include: {
         createdBy: {
@@ -38,7 +38,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { title, startsAt, endsAt, allDay, location, description, url, gcalEventId, gcalCalendarId } = body;
 
     // Check if event exists
-    const existingEvent = await prisma.event.findUnique({
+    const existingEvent = await supabaseDb.event.findUnique({
       where: { id },
     });
 
@@ -59,7 +59,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (gcalEventId !== undefined) updateData.gcalEventId = gcalEventId;
     if (gcalCalendarId !== undefined) updateData.gcalCalendarId = gcalCalendarId;
 
-    const updatedEvent = await prisma.event.update({
+    const updatedEvent = await supabaseDb.event.update({
       where: { id },
       data: updateData,
       include: {
@@ -85,7 +85,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const { id } = await params;
 
     // Check if event exists
-    const existingEvent = await prisma.event.findUnique({
+    const existingEvent = await supabaseDb.event.findUnique({
       where: { id },
     });
 
@@ -93,7 +93,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       return new Response(JSON.stringify({ error: 'Event not found' }), { status: 404 });
     }
 
-    await prisma.event.delete({
+    await supabaseDb.event.delete({
       where: { id },
     });
 
@@ -102,3 +102,5 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 }
+
+

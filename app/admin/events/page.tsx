@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import { prisma } from '../../../lib/prisma';
+import { supabaseDb } from '../../../lib/supabase-db';
 
 export default async function EventsPage() {
   let events: any[] = [];
   let total = 0;
 
   try {
-    const result = await prisma.event.findMany({
+    const result = await supabaseDb.event.findMany({
       take: 50,
       orderBy: { startsAt: 'asc' },
       include: {
@@ -16,7 +16,7 @@ export default async function EventsPage() {
       },
     });
     events = result;
-    total = await prisma.event.count();
+    total = await supabaseDb.event.count();
   } catch (error) {
     console.error('Error fetching events:', error);
     // Continue with empty array
@@ -206,3 +206,5 @@ export default async function EventsPage() {
     </div>
   );
 }
+
+

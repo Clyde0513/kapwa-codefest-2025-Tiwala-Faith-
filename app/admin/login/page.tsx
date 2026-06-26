@@ -153,7 +153,7 @@ function LoginForm() {
             </div>
           </div>
 
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+          {/* <div className="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
             <div className="text-sm text-blue-800">
               <p className="font-medium">Demo Credentials:</p>
               <p className="mt-1">
@@ -163,7 +163,7 @@ function LoginForm() {
                 Password: <code className="bg-blue-100 px-1 rounded">churchadmin2025</code>
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { prisma } from '../../lib/prisma';
+import { supabaseDb } from '../../lib/supabase-db';
 
 interface DatabaseBlogListProps {
   limit?: number;
@@ -9,7 +9,7 @@ export default async function DatabaseBlogList({ limit }: DatabaseBlogListProps)
   let posts: any[] = [];
 
   try {
-    const result = await prisma.post.findMany({
+    const result = await supabaseDb.post.findMany({
       where: { published: true },
       take: limit || 10,
       orderBy: { createdAt: 'desc' },
@@ -83,3 +83,6 @@ export default async function DatabaseBlogList({ limit }: DatabaseBlogListProps)
     </div>
   );
 }
+
+
+

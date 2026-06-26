@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { uploadToCloudinary, saveVideoToDatabase } from '../lib/cloudinary';
+import { uploadToSupabaseStorage, saveVideoToDatabase } from '../lib/supabase-media';
 
 interface VideoUploadProps {
   postId?: string;
@@ -36,14 +36,14 @@ export default function VideoUpload({ postId, uploaderId, onUploadComplete }: Vi
     setProgress(0);
 
     try {
-      // Step 1: Upload to Cloudinary
+      // Step 1: Upload to Supabase storage
       setProgress(25);
-      const cloudinaryResult = await uploadToCloudinary(file, 'video');
+      const uploadResult = await uploadToSupabaseStorage(file, 'video');
       
       // Step 2: Save to database
       setProgress(75);
       const dbResult = await saveVideoToDatabase({
-        ...cloudinaryResult,
+        ...uploadResult,
         caption: file.name,
         postId,
         uploaderId,
@@ -134,3 +134,4 @@ export default function VideoUpload({ postId, uploaderId, onUploadComplete }: Vi
     </div>
   );
 }
+

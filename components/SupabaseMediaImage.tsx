@@ -1,7 +1,7 @@
 import Image from 'next/image';
-import { clUrl, TRANSFORMS } from '../lib/cloudinary';
+import { supabaseMediaUrl, TRANSFORMS } from '../lib/supabase-media';
 
-interface CloudinaryImageProps {
+interface SupabaseMediaImageProps {
   publicId: string;
   alt: string;
   width?: number;
@@ -13,7 +13,7 @@ interface CloudinaryImageProps {
   fill?: boolean;
 }
 
-export default function CloudinaryImage({
+export default function SupabaseMediaImage({
   publicId,
   alt,
   width,
@@ -23,8 +23,8 @@ export default function CloudinaryImage({
   priority = false,
   sizes,
   fill = false,
-}: CloudinaryImageProps) {
-  const src = clUrl(publicId, transforms);
+}: SupabaseMediaImageProps) {
+  const src = supabaseMediaUrl(publicId, transforms);
 
   if (fill) {
     return (
@@ -40,7 +40,7 @@ export default function CloudinaryImage({
   }
 
   if (!width || !height) {
-    throw new Error('CloudinaryImage requires width and height when fill is false');
+    throw new Error('SupabaseMediaImage requires width and height when fill is false');
   }
 
   return (
@@ -59,7 +59,7 @@ export default function CloudinaryImage({
 // Convenience components for common use cases
 export function PhotoThumbnail({ publicId, alt, className }: { publicId: string; alt: string; className?: string }) {
   return (
-    <CloudinaryImage
+    <SupabaseMediaImage
       publicId={publicId}
       alt={alt}
       width={150}
@@ -72,7 +72,7 @@ export function PhotoThumbnail({ publicId, alt, className }: { publicId: string;
 
 export function PhotoCard({ publicId, alt, className }: { publicId: string; alt: string; className?: string }) {
   return (
-    <CloudinaryImage
+    <SupabaseMediaImage
       publicId={publicId}
       alt={alt}
       width={400}
@@ -85,7 +85,7 @@ export function PhotoCard({ publicId, alt, className }: { publicId: string; alt:
 
 export function PhotoHero({ publicId, alt, className }: { publicId: string; alt: string; className?: string }) {
   return (
-    <CloudinaryImage
+    <SupabaseMediaImage
       publicId={publicId}
       alt={alt}
       width={1200}
@@ -96,3 +96,4 @@ export function PhotoHero({ publicId, alt, className }: { publicId: string; alt:
     />
   );
 }
+

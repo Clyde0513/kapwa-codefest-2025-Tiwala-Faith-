@@ -8,7 +8,7 @@
  */
 
 import { NextStudio } from 'next-sanity/studio'
-import config from '../../../sanity.config'
+import config from '../../../supabase-studio.config'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,3 +38,4 @@ export default function StudioPage() {
     )
   }
 }
+

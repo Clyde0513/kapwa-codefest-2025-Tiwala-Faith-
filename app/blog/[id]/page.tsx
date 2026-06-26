@@ -1,4 +1,4 @@
-import { prisma } from '../../../lib/prisma';
+import { supabaseDb } from '../../../lib/supabase-db';
 import Link from 'next/link';
 import PostInteractions from '../../../components/PostInteractions';
 
@@ -15,7 +15,7 @@ export default async function PostPage({ params }: Props) {
   
   try {
     // Fetch post from database by ID with comment and like counts
-    post = await prisma.post.findUnique({
+    post = await supabaseDb.post.findUnique({
       where: { 
         id: id,
         published: true 
@@ -88,3 +88,5 @@ export default async function PostPage({ params }: Props) {
     </main>
   );
 }
+
+

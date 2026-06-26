@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { supabaseDb } from '../../../../lib/supabase-db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Find PostgreSQL posts that match the title (case-insensitive, partial match)
-    const dbPosts = await prisma.post.findMany({
+    const dbPosts = await supabaseDb.post.findMany({
       where: {
         title: {
           contains: title,
@@ -34,8 +34,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Return all photos from matching posts
-    const allPhotos = dbPosts.flatMap(post => 
-      post.photos.map(photo => ({
+    const allPhotos = dbPosts.flatMap((post: any) => 
+      post.photos.map((photo: any) => ({
         ...photo,
         postTitle: post.title,
         postId: post.id
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ 
       photos: allPhotos,
-      matchingPosts: dbPosts.map(post => ({
+      matchingPosts: dbPosts.map((post: any) => ({
         id: post.id,
         title: post.title,
         photoCount: post.photos.length
@@ -59,3 +59,5 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+

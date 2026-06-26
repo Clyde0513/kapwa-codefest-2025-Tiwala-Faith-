@@ -1,20 +1,27 @@
 import Header from '../components/Header';
-import { prisma } from '../../lib/prisma';
+import { supabaseDb } from '../../lib/supabase-db';
 import Link from 'next/link';
 
 export default async function BlogPage() {
-  // Fetch posts from database (excluding archived posts)
-  const posts = await prisma.post.findMany({
-    where: { 
-      published: true
-    },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      author: {
-        select: { name: true, email: true },
+  let posts: any[] = [];
+
+  try {
+    // Fetch posts from database (excluding archived posts)
+    posts = await supabaseDb.post.findMany({
+      where: {
+        published: true,
       },
-    },
-  });
+      orderBy: { createdAt: 'desc' },
+      include: {
+        author: {
+          select: { name: true, email: true },
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching blog posts:', error);
+    posts = [];
+  }
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#faecc8' }}>
@@ -103,3 +110,5 @@ export default async function BlogPage() {
     </main>
   )
 }
+
+

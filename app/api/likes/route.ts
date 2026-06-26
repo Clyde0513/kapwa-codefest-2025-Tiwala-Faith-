@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+import { supabaseDb } from '@/lib/supabase-db';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
@@ -21,14 +21,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Find or create user
-    const user = await prisma.user.upsert({
+    const user = await supabaseDb.user.upsert({
       where: { email: userEmail },
       update: {},
       create: { email: userEmail, name: 'Church Member' },
     });
 
     // Check if like already exists
-    const existingLike = await prisma.like.findUnique({
+    const existingLike = await supabaseDb.like.findUnique({
       where: {
         userId_postId: postId ? { userId: user.id, postId } : undefined,
         userId_commentId: commentId ? { userId: user.id, commentId } : undefined,
@@ -37,12 +37,12 @@ export async function POST(req: NextRequest) {
 
     if (existingLike) {
       // Unlike - remove the like
-      await prisma.like.delete({
+      await supabaseDb.like.delete({
         where: { id: existingLike.id },
       });
 
       // Get updated count
-      const count = await prisma.like.count({
+      const count = await supabaseDb.like.count({
         where: postId ? { postId } : { commentId },
       });
 
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       });
     } else {
       // Like - create new like
-      await prisma.like.create({
+      await supabaseDb.like.create({
         data: {
           userId: user.id,
           postId: postId || null,
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Get updated count
-      const count = await prisma.like.count({
+      const count = await supabaseDb.like.count({
         where: postId ? { postId } : { commentId },
       });
 
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Find user
-    const user = await prisma.user.findUnique({
+    const user = await supabaseDb.user.findUnique({
       where: { email: userEmail },
     });
 
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Check if user has liked
-    const existingLike = await prisma.like.findUnique({
+    const existingLike = await supabaseDb.like.findUnique({
       where: {
         userId_postId: postId ? { userId: user.id, postId } : undefined,
         userId_commentId: commentId ? { userId: user.id, commentId } : undefined,
@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Get total count
-    const count = await prisma.like.count({
+    const count = await supabaseDb.like.count({
       where: postId ? { postId } : { commentId },
     });
 
@@ -129,3 +129,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to check like status' }, { status: 500 });
   }
 }
+
+
+

@@ -1,4 +1,4 @@
-import { prisma } from './prisma';
+import { supabaseDb } from './supabase-db';
 
 // Utility function to handle database operations with retry logic
 export async function withRetry<T>(
@@ -32,104 +32,107 @@ export async function withRetry<T>(
 // Safe database operations
 export const db = {
   async createPost(options: any) {
-    return withRetry(() => prisma.post.create(options));
+    return withRetry(() => supabaseDb.post.create(options));
   },
 
   async findManyPosts(options: any) {
-    return withRetry(() => prisma.post.findMany(options));
+    return withRetry(() => supabaseDb.post.findMany(options));
   },
 
   async createEvent(options: any) {
-    return withRetry(() => prisma.event.create(options));
+    return withRetry(() => supabaseDb.event.create(options));
   },
 
   async findManyEvents(options: any) {
-    return withRetry(() => prisma.event.findMany(options));
+    return withRetry(() => supabaseDb.event.findMany(options));
   },
 
   async countPosts(options: any) {
-    return withRetry(() => prisma.post.count(options));
+    return withRetry(() => supabaseDb.post.count(options));
   },
 
   async countEvents(options: any) {
-    return withRetry(() => prisma.event.count(options));
+    return withRetry(() => supabaseDb.event.count(options));
   },
 
   async findUniquePost(options: any) {
-    return withRetry(() => prisma.post.findUnique(options));
+    return withRetry(() => supabaseDb.post.findUnique(options));
   },
 
   async updatePost(options: any) {
-    return withRetry(() => prisma.post.update(options));
+    return withRetry(() => supabaseDb.post.update(options));
   },
 
   async deletePost(options: any) {
-    return withRetry(() => prisma.post.delete(options));
+    return withRetry(() => supabaseDb.post.delete(options));
   },
 
   async createPhoto(options: any) {
-    return withRetry(() => prisma.photo.create(options));
+    return withRetry(() => supabaseDb.photo.create(options));
   },
 
   async findManyPhotos(options: any) {
-    return withRetry(() => prisma.photo.findMany(options));
+    return withRetry(() => supabaseDb.photo.findMany(options));
   },
 
   async countPhotos(options: any) {
-    return withRetry(() => prisma.photo.count(options));
+    return withRetry(() => supabaseDb.photo.count(options));
   },
 
   async findUniquePhoto(options: any) {
-    return withRetry(() => prisma.photo.findUnique(options));
+    return withRetry(() => supabaseDb.photo.findUnique(options));
   },
 
   async updatePhoto(options: any) {
-    return withRetry(() => prisma.photo.update(options));
+    return withRetry(() => supabaseDb.photo.update(options));
   },
 
   async deletePhoto(options: any) {
-    return withRetry(() => prisma.photo.delete(options));
+    return withRetry(() => supabaseDb.photo.delete(options));
   },
 
   // Video operations
   async createVideo(options: any) {
-    return withRetry(() => prisma.video.create(options));
+    return withRetry(() => supabaseDb.video.create(options));
   },
 
   async findManyVideos(options: any) {
-    return withRetry(() => prisma.video.findMany(options));
+    return withRetry(() => supabaseDb.video.findMany(options));
   },
 
   async countVideos(options: any) {
-    return withRetry(() => prisma.video.count(options));
+    return withRetry(() => supabaseDb.video.count(options));
   },
 
   async findUniqueVideo(options: any) {
-    return withRetry(() => prisma.video.findUnique(options));
+    return withRetry(() => supabaseDb.video.findUnique(options));
   },
 
   async updateVideo(options: any) {
-    return withRetry(() => prisma.video.update(options));
+    return withRetry(() => supabaseDb.video.update(options));
   },
 
   async deleteVideo(options: any) {
-    return withRetry(() => prisma.video.delete(options));
+    return withRetry(() => supabaseDb.video.delete(options));
   },
 
   // Settings operations
   async createSettings(options: any) {
-    return withRetry(() => prisma.settings.create(options));
+    return withRetry(() => supabaseDb.settings.create(options));
   },
 
   async findUniqueSettings(options: any) {
-    return withRetry(() => prisma.settings.findUnique(options));
+    return withRetry(() => supabaseDb.settings.findUnique(options));
   },
 
   async updateSettings(options: any) {
-    return withRetry(() => prisma.settings.update(options));
+    return withRetry(() => supabaseDb.settings.update(options));
   },
 
   async upsertSettings(options: any) {
-    return withRetry(() => prisma.settings.upsert(options));
+    return withRetry(() => supabaseDb.settings.upsert(options));
   },
 };
+
+
+

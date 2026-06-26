@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { supabaseDb } from '../../../../lib/supabase-db';
 
 // Delete video (soft delete - removes from Cloudinary and marks as deleted in DB)
 export async function DELETE(
@@ -10,7 +10,7 @@ export async function DELETE(
     const { id } = await params;
     
     // Get video record
-    const video = await prisma.video.findUnique({
+    const video = await supabaseDb.video.findUnique({
       where: { id },
       select: { id: true, publicId: true, postId: true },
     });
@@ -29,7 +29,7 @@ export async function DELETE(
 
     // For now, just delete from database
     // In production, you might want to soft delete instead
-    await prisma.video.delete({
+    await supabaseDb.video.delete({
       where: { id },
     });
 
@@ -57,7 +57,7 @@ export async function GET(
   try {
     const { id } = await params;
     
-    const video = await prisma.video.findUnique({
+    const video = await supabaseDb.video.findUnique({
       where: { id },
       include: {
         uploader: {
@@ -118,7 +118,7 @@ export async function PATCH(
       );
     }
 
-    const video = await prisma.video.update({
+    const video = await supabaseDb.video.update({
       where: { id },
       data: updateData,
       include: {
@@ -150,3 +150,5 @@ export async function PATCH(
     );
   }
 }
+
+

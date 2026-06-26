@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { supabaseDb } from '../../../../lib/supabase-db';
 
 // Delete photo (soft delete - removes from Cloudinary and marks as deleted in DB)
 export async function DELETE(
@@ -10,7 +10,7 @@ export async function DELETE(
     const { id } = await params;
     
     // Get photo record
-    const photo = await prisma.photo.findUnique({
+    const photo = await supabaseDb.photo.findUnique({
       where: { id },
       select: { id: true, publicId: true, postId: true },
     });
@@ -29,7 +29,7 @@ export async function DELETE(
 
     // For now, just delete from database
     // In production, you might want to soft delete instead
-    await prisma.photo.delete({
+    await supabaseDb.photo.delete({
       where: { id },
     });
 
@@ -57,7 +57,7 @@ export async function GET(
   try {
     const { id } = await params;
     
-    const photo = await prisma.photo.findUnique({
+    const photo = await supabaseDb.photo.findUnique({
       where: { id },
       include: {
         uploader: {
@@ -118,7 +118,7 @@ export async function PATCH(
       );
     }
 
-    const photo = await prisma.photo.update({
+    const photo = await supabaseDb.photo.update({
       where: { id },
       data: updateData,
       include: {
@@ -150,3 +150,5 @@ export async function PATCH(
     );
   }
 }
+
+

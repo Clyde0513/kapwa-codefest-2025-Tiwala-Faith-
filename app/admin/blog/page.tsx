@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { sanityClient } from '../../../lib/sanityClient';
+import { supabaseContentClient } from '../../../lib/supabase-content-client';
 
 export default async function BlogManagementPage() {
   // Fetch blog posts from Sanity
@@ -7,7 +7,7 @@ export default async function BlogManagementPage() {
   let totalPosts = 0;
 
   try {
-    sanityPosts = await sanityClient.fetch(`
+    sanityPosts = await supabaseContentClient.fetch(`
       *[_type == "post"] | order(publishedAt desc) {
         _id,
         title,
@@ -183,3 +183,4 @@ export default async function BlogManagementPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { fetchPosts } from '../../lib/sanityClient'
+import { fetchPosts } from '../../lib/supabase-content-client'
 import Link from 'next/link'
 
 export default async function BlogList({ limit }: { limit?: number }) {
@@ -19,3 +19,4 @@ export default async function BlogList({ limit }: { limit?: number }) {
     </div>
   )
 }
+

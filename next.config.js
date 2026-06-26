@@ -6,6 +6,12 @@ const nextConfig = {
   outputFileTracingRoot: path.join(__dirname),
   images: {
     domains: ['res.cloudinary.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+      },
+    ],
   },
 }
 
