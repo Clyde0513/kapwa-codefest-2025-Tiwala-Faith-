@@ -3,13 +3,25 @@ import { db } from '../../../lib/db-utils';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 
+const mediaUrlSchema = z
+  .string()
+  .refine(
+    (value) =>
+      value === '' ||
+      value.startsWith('/api/media/proxy') ||
+      value.startsWith('/images/') ||
+      /^https?:\/\//.test(value),
+    'Invalid image URL'
+  )
+  .optional();
+
 const eventSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
   description: z.string().max(5000, 'Description must be less than 5,000 characters').optional(),
   startsAt: z.string().datetime('Invalid start date'),
   endsAt: z.string().datetime('Invalid end date'),
   location: z.string().max(500, 'Location must be less than 500 characters').optional(),
-  imageUrl: z.string().url('Invalid image URL').optional().or(z.literal('')),
+  imageUrl: mediaUrlSchema,
   allDay: z.boolean().default(false),
   createdById: z.string().uuid().optional(),
 });

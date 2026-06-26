@@ -96,7 +96,9 @@ export default function NewEventPage() {
         router.push('/admin/events');
         router.refresh();
       } else {
-        alert('Failed to create event. Please try again.');
+        const errorData = await response.json().catch(() => null);
+        const validationMessage = errorData?.details?.[0]?.message;
+        alert(validationMessage || errorData?.error || 'Failed to create event. Please try again.');
       }
     } catch (error) {
       console.error('Error creating event:', error);

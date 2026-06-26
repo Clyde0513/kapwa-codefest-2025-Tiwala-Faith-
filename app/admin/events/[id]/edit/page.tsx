@@ -140,7 +140,8 @@ export default function EditEventPage() {
         router.push('/admin/events');
         router.refresh();
       } else {
-        alert('Failed to update event. Please try again.');
+        const errorData = await response.json().catch(() => null);
+        alert(errorData?.error || 'Failed to update event. Please try again.');
       }
     } catch (error) {
       console.error('Error updating event:', error);
