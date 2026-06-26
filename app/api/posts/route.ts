@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../lib/db-utils';
 import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
 
 const postSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
@@ -33,6 +34,10 @@ export async function POST(req: NextRequest) {
         },
       },
     });
+
+    revalidatePath('/');
+    revalidatePath('/blog');
+    revalidatePath('/archive');
 
     return NextResponse.json({ ok: true, post }, { status: 201 });
   } catch (error) {

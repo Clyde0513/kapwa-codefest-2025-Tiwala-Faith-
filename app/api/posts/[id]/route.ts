@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../../lib/db-utils';
 import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
 
 const postSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
@@ -96,6 +97,11 @@ export async function PUT(
       },
     });
 
+    revalidatePath('/');
+    revalidatePath('/blog');
+    revalidatePath('/archive');
+    revalidatePath(`/blog/${id}`);
+
     return NextResponse.json({ ok: true, post: updatedPost });
   } catch (error) {
     console.error('Error updating post:', error);
@@ -152,6 +158,11 @@ export async function DELETE(
     await db.deletePost({
       where: { id },
     });
+
+    revalidatePath('/');
+    revalidatePath('/blog');
+    revalidatePath('/archive');
+    revalidatePath(`/blog/${id}`);
 
     return NextResponse.json({ ok: true, message: 'Post deleted successfully' });
   } catch (error) {
@@ -215,6 +226,11 @@ export async function PATCH(
         },
       },
     });
+
+    revalidatePath('/');
+    revalidatePath('/blog');
+    revalidatePath('/archive');
+    revalidatePath(`/blog/${id}`);
 
     return NextResponse.json({ 
       ok: true, 

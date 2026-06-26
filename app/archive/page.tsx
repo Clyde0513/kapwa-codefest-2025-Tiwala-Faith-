@@ -2,6 +2,8 @@ import Header from '../components/Header';
 import { supabaseDb } from '../../lib/supabase-db';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ArchivePage() {
   let archivedPosts: any[] = [];
 
