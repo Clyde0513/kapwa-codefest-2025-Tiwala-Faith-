@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { normalizeMediaUrl, uploadToSupabaseStorage } from '../../../lib/supabase-media';
+import { formatBytes, resizeImageFile } from '../../../lib/client-image-resize';
 
 interface WebsiteSettings {
   // Basic Information
@@ -180,6 +181,8 @@ export default function WebsiteSettingsPage() {
   const [settings, setSettings] = useState<WebsiteSettings>(defaultSettings);
   const [imageUploading, setImageUploading] = useState(false);
   const [footerLogoUploading, setFooterLogoUploading] = useState(false);
+  const [missionLogoResizeSummary, setMissionLogoResizeSummary] = useState<string | null>(null);
+  const [footerLogoResizeSummary, setFooterLogoResizeSummary] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -250,8 +253,15 @@ export default function WebsiteSettingsPage() {
     }
 
     setImageUploading(true);
+    setMissionLogoResizeSummary(null);
     try {
-      const result = await uploadToSupabaseStorage(file, 'image');
+      const resizedImage = await resizeImageFile(file, { maxWidth: 800, maxHeight: 800, quality: 0.86 });
+      setMissionLogoResizeSummary(
+        resizedImage.resized
+          ? `Resized to ${resizedImage.width}x${resizedImage.height}: ${formatBytes(resizedImage.originalBytes)} -> ${formatBytes(resizedImage.resizedBytes)}`
+          : `Image kept at original size: ${formatBytes(resizedImage.originalBytes)}`
+      );
+      const result = await uploadToSupabaseStorage(resizedImage.file, 'image');
       setSettings(prev => ({ ...prev, logoImageUrl: result.url }));
     } catch (error) {
       console.error('Error uploading logo image:', error);
@@ -271,8 +281,15 @@ export default function WebsiteSettingsPage() {
     }
 
     setFooterLogoUploading(true);
+    setFooterLogoResizeSummary(null);
     try {
-      const result = await uploadToSupabaseStorage(file, 'image');
+      const resizedImage = await resizeImageFile(file, { maxWidth: 800, maxHeight: 800, quality: 0.86 });
+      setFooterLogoResizeSummary(
+        resizedImage.resized
+          ? `Resized to ${resizedImage.width}x${resizedImage.height}: ${formatBytes(resizedImage.originalBytes)} -> ${formatBytes(resizedImage.resizedBytes)}`
+          : `Image kept at original size: ${formatBytes(resizedImage.originalBytes)}`
+      );
+      const result = await uploadToSupabaseStorage(resizedImage.file, 'image');
       setSettings(prev => ({ ...prev, footerLogoUrl: result.url }));
     } catch (error) {
       console.error('Error uploading footer logo:', error);
@@ -535,6 +552,7 @@ export default function WebsiteSettingsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {imageUploading && <p className="text-sm text-gray-500 mt-2">Uploading image...</p>}
+                {missionLogoResizeSummary && <p className="text-sm text-green-700 mt-2">{missionLogoResizeSummary}</p>}
                 {settings.logoImageUrl && (
                   <div className="mt-4 inline-block">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -750,6 +768,7 @@ export default function WebsiteSettingsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {footerLogoUploading && <p className="text-sm text-gray-500 mt-2">Uploading logo...</p>}
+                {footerLogoResizeSummary && <p className="text-sm text-green-700 mt-2">{footerLogoResizeSummary}</p>}
                 {settings.footerLogoUrl && (
                   <div className="mt-4 inline-block">
                     {/* eslint-disable-next-line @next/next/no-img-element */}

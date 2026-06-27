@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { normalizeMediaUrl, uploadToSupabaseStorage } from '../../../../../lib/supabase-media';
 import { easternDateInputValue, easternDateTimeLocalValue, easternLocalInputToUtcIso } from '../../../../../lib/time';
+import { formatBytes, resizeImageFile } from '../../../../../lib/client-image-resize';
 
 export default function EditEventPage() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function EditEventPage() {
     allDay: false,
   });
   const [imageUploading, setImageUploading] = useState(false);
+  const [imageResizeSummary, setImageResizeSummary] = useState<string | null>(null);
 
   // Fetch event data
   useEffect(() => {
@@ -187,8 +189,15 @@ export default function EditEventPage() {
     }
 
     setImageUploading(true);
+    setImageResizeSummary(null);
     try {
-      const result = await uploadToSupabaseStorage(file, 'image');
+      const resizedImage = await resizeImageFile(file, { maxWidth: 1600, maxHeight: 1000, quality: 0.84 });
+      setImageResizeSummary(
+        resizedImage.resized
+          ? `Resized to ${resizedImage.width}x${resizedImage.height}: ${formatBytes(resizedImage.originalBytes)} -> ${formatBytes(resizedImage.resizedBytes)}`
+          : `Image kept at original size: ${formatBytes(resizedImage.originalBytes)}`
+      );
+      const result = await uploadToSupabaseStorage(resizedImage.file, 'image');
       setFormData(prev => ({ ...prev, imageUrl: result.url }));
     } catch (error) {
       console.error('Error uploading event image:', error);
@@ -288,6 +297,7 @@ export default function EditEventPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {imageUploading && <p className="text-sm text-gray-500 mt-2">Uploading image...</p>}
+                {imageResizeSummary && <p className="text-sm text-green-700 mt-2">{imageResizeSummary}</p>}
                 {formData.imageUrl && (
                   <div className="mt-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}

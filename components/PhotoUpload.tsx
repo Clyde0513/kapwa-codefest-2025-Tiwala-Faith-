@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { uploadToSupabaseStorage, savePhotoToDatabase } from '@/lib/supabase-media';
+import { formatBytes, resizeImageFile } from '@/lib/client-image-resize';
 
 interface PhotoUploadProps {
   postId?: string;
@@ -13,6 +14,7 @@ export default function PhotoUpload({ postId, uploaderId, onUploadComplete }: Ph
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [resizeSummary, setResizeSummary] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,14 +35,24 @@ export default function PhotoUpload({ postId, uploaderId, onUploadComplete }: Ph
 
     setUploading(true);
     setError(null);
+    setResizeSummary(null);
     setProgress(0);
 
     try {
-      // Step 1: Upload to Supabase storage
+      // Step 1: Resize before upload so mobile photos do not upload at full camera size.
       setProgress(25);
-      const uploadResult = await uploadToSupabaseStorage(file);
+      const resizedImage = await resizeImageFile(file);
+      setResizeSummary(
+        resizedImage.resized
+          ? `Resized to ${resizedImage.width}x${resizedImage.height}: ${formatBytes(resizedImage.originalBytes)} -> ${formatBytes(resizedImage.resizedBytes)}`
+          : `Image kept at original size: ${formatBytes(resizedImage.originalBytes)}`
+      );
+
+      // Step 2: Upload to Supabase storage
+      setProgress(50);
+      const uploadResult = await uploadToSupabaseStorage(resizedImage.file);
       
-      // Step 2: Save to database
+      // Step 3: Save to database
       setProgress(75);
       const dbResult = await savePhotoToDatabase({
         ...uploadResult,
@@ -118,6 +130,12 @@ export default function PhotoUpload({ postId, uploaderId, onUploadComplete }: Ph
       {error && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
+      {resizeSummary && (
+        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+          <p className="text-sm text-green-700">{resizeSummary}</p>
         </div>
       )}
 

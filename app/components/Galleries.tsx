@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { normalizeMediaUrl } from '../../lib/supabase-media';
+import PhotoUpload from '../../components/PhotoUpload';
 
 interface Photo {
   id: string;
@@ -71,6 +72,16 @@ export default function Galleries() {
           <h3 className="text-3xl font-poppins font-bold text-gray-900 mb-8">
             Photo Gallery
           </h3>
+
+          <div className="mb-10 rounded-2xl border border-[#A85A52]/20 bg-white/70 p-6 shadow-sm">
+            <div className="mb-4">
+              <h4 className="text-xl font-poppins font-bold text-gray-900">Share a community photo</h4>
+              <p className="text-sm text-gray-600 mt-1">
+                Photos are resized in your browser before upload so they load quickly on the website.
+              </p>
+            </div>
+            <PhotoUpload onUploadComplete={(photo) => setPhotos((prev) => [photo, ...prev])} />
+          </div>
           
           {/* Photo Grid */}
           {loading ? (
