@@ -11,6 +11,7 @@ export type ImageResizeOptions = {
   maxWidth?: number;
   maxHeight?: number;
   quality?: number;
+  force?: boolean;
 };
 
 const DEFAULT_MAX_WIDTH = 1920;
@@ -83,7 +84,7 @@ export async function resizeImageFile(
   const width = Math.max(1, Math.round(image.width * scale));
   const height = Math.max(1, Math.round(image.height * scale));
 
-  if (scale === 1 && file.size <= 1024 * 1024) {
+  if (!options.force && scale === 1 && file.size <= 1024 * 1024) {
     return {
       file,
       originalBytes: file.size,
@@ -114,7 +115,7 @@ export async function resizeImageFile(
     lastModified: Date.now(),
   });
 
-  if (resizedFile.size >= file.size && scale === 1) {
+  if (!options.force && resizedFile.size >= file.size && scale === 1) {
     return {
       file,
       originalBytes: file.size,

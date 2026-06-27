@@ -25,6 +25,24 @@ export default function EditEventPage() {
   });
   const [imageUploading, setImageUploading] = useState(false);
   const [imageResizeSummary, setImageResizeSummary] = useState<string | null>(null);
+  const [imageResizeSettings, setImageResizeSettings] = useState({
+    preset: 'event-card',
+    maxWidth: 1600,
+    maxHeight: 1000,
+    quality: 84,
+    force: false,
+  });
+
+  const applyResizePreset = (preset: string) => {
+    const presets: Record<string, { maxWidth: number; maxHeight: number; quality: number; force: boolean }> = {
+      'event-card': { maxWidth: 1600, maxHeight: 1000, quality: 84, force: false },
+      square: { maxWidth: 1200, maxHeight: 1200, quality: 84, force: true },
+      banner: { maxWidth: 1920, maxHeight: 800, quality: 82, force: true },
+      original: { maxWidth: 4000, maxHeight: 4000, quality: 90, force: false },
+    };
+
+    setImageResizeSettings({ preset, ...presets[preset] });
+  };
 
   // Fetch event data
   useEffect(() => {
@@ -191,7 +209,12 @@ export default function EditEventPage() {
     setImageUploading(true);
     setImageResizeSummary(null);
     try {
-      const resizedImage = await resizeImageFile(file, { maxWidth: 1600, maxHeight: 1000, quality: 0.84 });
+      const resizedImage = await resizeImageFile(file, {
+        maxWidth: imageResizeSettings.maxWidth,
+        maxHeight: imageResizeSettings.maxHeight,
+        quality: imageResizeSettings.quality / 100,
+        force: imageResizeSettings.force,
+      });
       setImageResizeSummary(
         resizedImage.resized
           ? `Resized to ${resizedImage.width}x${resizedImage.height}: ${formatBytes(resizedImage.originalBytes)} -> ${formatBytes(resizedImage.resizedBytes)}`
@@ -296,6 +319,66 @@ export default function EditEventPage() {
                   disabled={imageUploading}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
+                <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Preset</label>
+                      <select
+                        value={imageResizeSettings.preset}
+                        onChange={(e) => applyResizePreset(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      >
+                        <option value="event-card">Event card</option>
+                        <option value="square">Square crop bounds</option>
+                        <option value="banner">Wide banner</option>
+                        <option value="original">Keep near original</option>
+                        <option value="custom">Custom</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Max width</label>
+                      <input
+                        type="number"
+                        min="320"
+                        max="4000"
+                        value={imageResizeSettings.maxWidth}
+                        onChange={(e) => setImageResizeSettings(prev => ({ ...prev, preset: 'custom', maxWidth: Number(e.target.value) }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Max height</label>
+                      <input
+                        type="number"
+                        min="320"
+                        max="4000"
+                        value={imageResizeSettings.maxHeight}
+                        onChange={(e) => setImageResizeSettings(prev => ({ ...prev, preset: 'custom', maxHeight: Number(e.target.value) }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Quality</label>
+                      <input
+                        type="number"
+                        min="40"
+                        max="95"
+                        value={imageResizeSettings.quality}
+                        onChange={(e) => setImageResizeSettings(prev => ({ ...prev, preset: 'custom', quality: Number(e.target.value) }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      />
+                    </div>
+                  </div>
+                  <label className="mt-3 flex items-center text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={imageResizeSettings.force}
+                      onChange={(e) => setImageResizeSettings(prev => ({ ...prev, preset: 'custom', force: e.target.checked }))}
+                      className="mr-2"
+                    />
+                    Force recompress even if image is already smaller than the selected size
+                  </label>
+                </div>
                 {imageUploading && <p className="text-sm text-gray-500 mt-2">Uploading image...</p>}
                 {imageResizeSummary && <p className="text-sm text-green-700 mt-2">{imageResizeSummary}</p>}
                 {formData.imageUrl && (
