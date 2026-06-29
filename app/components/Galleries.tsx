@@ -128,9 +128,9 @@ export default function Galleries() {
               {photos.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-gray-600 text-lg mb-4">No photos in gallery yet.</p>
-                  <p className="text-gray-500 text-sm">
+                  {/* <p className="text-gray-500 text-sm">
                     Upload photos through the admin panel to see them here.
-                  </p>
+                  </p> */}
                 </div>
               )}
             </>
