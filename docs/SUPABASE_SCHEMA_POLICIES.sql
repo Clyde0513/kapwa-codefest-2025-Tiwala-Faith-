@@ -162,6 +162,8 @@ create table if not exists public."Photo" (
   format text not null,
   bytes bigint not null,
   caption text,
+  "moderationStatus" text not null default 'approved' check ("moderationStatus" in ('pending', 'approved', 'rejected')),
+  "moderatedAt" timestamptz,
   "uploaderId" uuid references public."User"(id) on delete set null,
   "createdAt" timestamptz not null default now()
 );
@@ -169,6 +171,7 @@ create table if not exists public."Photo" (
 create index if not exists photo_post_idx on public."Photo"("postId");
 create index if not exists photo_uploader_idx on public."Photo"("uploaderId");
 create index if not exists photo_created_idx on public."Photo"("createdAt" desc);
+create index if not exists photo_moderation_status_idx on public."Photo"("moderationStatus");
 
 create table if not exists public."Video" (
   id uuid primary key default gen_random_uuid(),

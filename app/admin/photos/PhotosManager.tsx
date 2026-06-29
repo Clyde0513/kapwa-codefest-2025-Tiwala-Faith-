@@ -12,6 +12,7 @@ interface Photo {
   format?: string;
   bytes?: number;
   caption?: string | null;
+  moderationStatus?: 'pending' | 'approved' | 'rejected';
   createdAt?: string;
   post?: { id: string; title?: string } | null;
   uploader?: { id: string; name?: string } | null;
@@ -28,7 +29,7 @@ export default function PhotosManager() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/photos');
+      const res = await fetch('/api/photos?moderationStatus=all');
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed fetching photos');
       setPhotos(json.photos || []);
@@ -56,6 +57,33 @@ export default function PhotosManager() {
     } catch (err) {
       alert('Failed to delete photo');
       console.error(err);
+    }
+  };
+
+  const updateModerationStatus = async (id: string, moderationStatus: 'pending' | 'approved' | 'rejected') => {
+    try {
+      const res = await fetch(`/api/photos/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moderationStatus }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Moderation update failed');
+      setPhotos((prev) => prev?.map((p) => (p.id === id ? json.photo : p)) ?? []);
+    } catch (err) {
+      alert('Failed to update photo moderation status');
+      console.error(err);
+    }
+  };
+
+  const statusClassName = (status?: string) => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-yellow-100 text-yellow-800';
     }
   };
 
@@ -104,9 +132,10 @@ export default function PhotosManager() {
       <div className="mb-8 p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Upload New Photos</h3>
         <p className="text-sm text-gray-600 mb-4">
-          Upload photos to your gallery. They will appear on the public Gallery page and can be used in blog posts.
+          Admin uploads are approved immediately. Community uploads appear here for review before they show publicly.
         </p>
         <PhotoUpload 
+          moderationStatus="approved"
           onUploadComplete={() => fetchPhotos()} 
         />
       </div>
@@ -132,8 +161,27 @@ export default function PhotosManager() {
                   <p className="font-medium text-gray-900 truncate">{photo.post?.title ?? 'Unattached'}</p>
                   <p className="text-sm text-gray-500">Uploaded by {photo.uploader?.name ?? 'Unknown'}</p>
                   <p className="text-sm text-gray-500">{photo.format} • {photo.width}x{photo.height}</p>
+                  <span className={`mt-2 inline-block rounded-full px-2 py-1 text-xs font-semibold ${statusClassName(photo.moderationStatus)}`}>
+                    {photo.moderationStatus || 'pending'}
+                  </span>
                 </div>
                 <div className="flex-shrink-0 flex flex-col items-end gap-2">
+                  {photo.moderationStatus !== 'approved' && (
+                    <button
+                      onClick={() => updateModerationStatus(photo.id, 'approved')}
+                      className="text-sm text-green-600 hover:text-green-800"
+                    >
+                      Approve
+                    </button>
+                  )}
+                  {photo.moderationStatus !== 'rejected' && (
+                    <button
+                      onClick={() => updateModerationStatus(photo.id, 'rejected')}
+                      className="text-sm text-orange-600 hover:text-orange-800"
+                    >
+                      Reject
+                    </button>
+                  )}
                   <button
                     onClick={() => deletePhoto(photo.id)}
                     className="text-sm text-red-600 hover:text-red-800"

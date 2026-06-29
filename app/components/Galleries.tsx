@@ -24,6 +24,7 @@ export default function Galleries() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploadNotice, setUploadNotice] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -77,10 +78,18 @@ export default function Galleries() {
             <div className="mb-4">
               <h4 className="text-xl font-poppins font-bold text-gray-900">Share a community photo</h4>
               <p className="text-sm text-gray-600 mt-1">
-                Photos are resized in your browser before upload so they load quickly on the website.
+                Photos are resized in your browser and reviewed by an admin before they appear publicly.
               </p>
             </div>
-            <PhotoUpload onUploadComplete={(photo) => setPhotos((prev) => [photo, ...prev])} />
+            <PhotoUpload
+              moderationStatus="pending"
+              onUploadComplete={() => setUploadNotice('Thanks for sharing. Your photo is pending admin approval before it appears in the gallery.')}
+            />
+            {uploadNotice && (
+              <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+                {uploadNotice}
+              </div>
+            )}
           </div>
           
           {/* Photo Grid */}

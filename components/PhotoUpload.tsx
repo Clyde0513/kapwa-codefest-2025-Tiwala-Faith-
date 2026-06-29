@@ -7,10 +7,11 @@ import { formatBytes, resizeImageFile } from '@/lib/client-image-resize';
 interface PhotoUploadProps {
   postId?: string;
   uploaderId?: string;
+  moderationStatus?: 'pending' | 'approved';
   onUploadComplete?: (photo: any) => void;
 }
 
-export default function PhotoUpload({ postId, uploaderId, onUploadComplete }: PhotoUploadProps) {
+export default function PhotoUpload({ postId, uploaderId, moderationStatus = 'pending', onUploadComplete }: PhotoUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -59,12 +60,17 @@ export default function PhotoUpload({ postId, uploaderId, onUploadComplete }: Ph
         caption: file.name,
         postId,
         uploaderId,
+        moderationStatus,
       });
 
       setProgress(100);
       
       if (onUploadComplete) {
         onUploadComplete(dbResult.photo);
+      }
+
+      if (moderationStatus === 'pending') {
+        setResizeSummary((current) => `${current || 'Upload complete.'} Your photo is pending admin approval before it appears in the gallery.`);
       }
 
       // Reset form

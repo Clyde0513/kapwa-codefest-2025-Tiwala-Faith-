@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
         caption: body.caption || null,
         postId: body.postId || null,
         uploaderId: body.uploaderId || null,
+        moderationStatus: body.moderationStatus === 'approved' ? 'approved' : 'pending',
       },
       include: {
         uploader: {
@@ -83,6 +84,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const postId = searchParams.get('postId');
     const uploaderId = searchParams.get('uploaderId');
+    const moderationStatus = searchParams.get('moderationStatus');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
@@ -94,6 +96,14 @@ export async function GET(req: NextRequest) {
     
     if (uploaderId) {
       where.uploaderId = uploaderId;
+    }
+
+    if (moderationStatus === 'all') {
+      // Admin view: no moderation filter.
+    } else if (moderationStatus && ['pending', 'approved', 'rejected'].includes(moderationStatus)) {
+      where.moderationStatus = moderationStatus;
+    } else {
+      where.moderationStatus = 'approved';
     }
 
     const photos = await db.findManyPhotos({

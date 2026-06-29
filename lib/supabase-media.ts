@@ -230,6 +230,7 @@ export async function savePhotoToDatabase(photoData: {
   caption?: string;
   postId?: string;
   uploaderId?: string;
+  moderationStatus?: 'pending' | 'approved';
 }) {
   const res = await fetch('/api/photos', {
     method: 'POST',

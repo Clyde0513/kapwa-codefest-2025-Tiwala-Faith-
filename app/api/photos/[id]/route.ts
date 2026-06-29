@@ -106,10 +106,24 @@ export async function PATCH(
     const body = await req.json();
     
     // Only allow updating certain fields
-    const allowedFields = ['caption'];
+    const allowedFields = ['caption', 'moderationStatus'];
     const updateData = Object.fromEntries(
       Object.entries(body).filter(([key]) => allowedFields.includes(key))
     );
+
+    if (
+      updateData.moderationStatus &&
+      !['pending', 'approved', 'rejected'].includes(String(updateData.moderationStatus))
+    ) {
+      return NextResponse.json(
+        { error: 'Invalid moderation status' },
+        { status: 400 }
+      );
+    }
+
+    if (updateData.moderationStatus) {
+      updateData.moderatedAt = new Date().toISOString();
+    }
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(
